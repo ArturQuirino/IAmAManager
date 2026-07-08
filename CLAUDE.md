@@ -8,7 +8,7 @@ This file defines the mandatory development rules. When generating or changing c
 
 ## 1. General principles
 
-- **Language:** code, identifiers, and file names in **English**. End-user-facing messages (API errors, UI text) in **Portuguese**, as already done (`"Credenciais inválidas"`).
+- **Language:** code, identifiers, and file names in **English**. End-user-facing messages (API errors, UI text) must support **Portuguese, English, and Spanish**, resolved according to the user's language — see §3 (Internationalization). Never hardcode a user-facing string in a single language.
 - **Fail fast, fail loud:** validate input at the boundary (Pydantic schemas / TS types) and fail early with explicit errors. Never swallow exceptions silently.
 - **No dead code:** leave no unused imports, variables, functions, or endpoints. Do not comment out code "for later" — git history handles that.
 - **Consistency over personal preference:** follow the pattern of the existing file/layer before introducing a new style.
@@ -64,7 +64,24 @@ Rules:
 
 ---
 
-## 3. Security (top priority)
+## 3. Internationalization (i18n)
+
+The application must be usable in **Portuguese (pt-BR), English (en), and Spanish (es)**, behaving according to the user's selected/detected language. i18n is a first-class requirement, not an afterthought: every new user-facing feature must be designed for it from the start, not retrofitted later.
+
+- **No hardcoded user-facing strings.** Any text shown to the end user (UI copy, validation/error messages, emails, notifications) must come from a translation resource, never written inline in a single language in the code.
+- **Backend (`backend/app/`):**
+  - Do not hardcode response/error messages in one language. Errors raised via `app/exceptions.py`/services must resolve to the user's locale (from an `Accept-Language` header, a stored user preference, or an explicit parameter) with a defined default/fallback locale, or expose a stable `code` and let the frontend own the translated copy.
+  - Keep **log messages** (always English, for maintainers/debugging) separate from **user-facing messages** (translated). Never reuse one for the other.
+- **Frontend (`frontend/`):**
+  - All UI copy goes through the project's i18n layer (translation catalogs, e.g. under a `messages/`/`locales/` directory) — no literal strings embedded in JSX/TSX beyond the translation call.
+  - The active locale must be resolvable per user (stored preference and/or browser language), with a single documented default and fallback order.
+  - Dates, numbers, and currency are formatted with locale-aware utilities (e.g. `Intl.*`), never manually concatenated or assumed to be pt-BR format.
+- **New user-facing strings ship in all three locales (pt, en, es) in the same PR.** A change that adds copy in only one language is incomplete.
+- Prefer asserting on translation keys (not literal translated text) in tests, or fix the test locale explicitly.
+
+---
+
+## 4. Security (top priority)
 
 - **Never** commit secrets, tokens, passwords, or a real `JWT_SECRET`. In production, `jwt_secret` **must** come from a secret manager (never the default `"local_dev_secret_change_in_production"`).
 - **Passwords:** always with `bcrypt` (already in use). Never log, return in a response, or compare in plain text. The `password` field **never** appears in a response schema.
@@ -79,7 +96,7 @@ Rules:
 
 ---
 
-## 4. Automated tests
+## 5. Automated tests
 
 Tests are **mandatory** for every new business rule and every endpoint. A PR without a test for the new functionality is not done.
 
@@ -100,7 +117,7 @@ Tests are **mandatory** for every new business rule and every endpoint. A PR wit
 
 ---
 
-## 5. Code quality and objective limits
+## 6. Code quality and objective limits
 
 These are hard limits (guardrails). When you exceed one, refactor before moving on.
 
@@ -123,7 +140,7 @@ In addition:
 
 ---
 
-## 6. Dependency structure
+## 7. Dependency structure
 
 - **Backend:** dependencies in `requirements.txt`. Every new lib is added pinned to a compatible minimum version and justified in the PR. Do not introduce libs that duplicate something already present (e.g. `python-jose`, `passlib[bcrypt]`, `bcrypt` already exist).
 - **Frontend:** `package.json` with versions locked via `package-lock.json` (committed). Do not run `npm install <pkg>` without a clear need; avoid heavy transitive dependencies.
@@ -132,7 +149,7 @@ In addition:
 
 ---
 
-## 7. Database and migrations
+## 8. Database and migrations
 
 - Schema changes **always** via an Alembic migration in `backend/alembic/versions/`. Never edit the database manually nor alter an already-applied migration — create a new one.
 - Every migration needs a working `upgrade` **and** `downgrade`.
@@ -141,7 +158,7 @@ In addition:
 
 ---
 
-## 8. Error handling and logging
+## 9. Error handling and logging
 
 - HTTP errors via the factories in `app/exceptions.py` (e.g. `unauthorized(...)`) — do not instantiate `HTTPException` ad hoc across the code.
 - The API error format is standardized by the handler in `main.py` (`{"message": ...}`). Respect it.
@@ -150,7 +167,7 @@ In addition:
 
 ---
 
-## 9. Workflow
+## 10. Workflow
 
 - **Branch:** work off `main`. One PR per logical unit of change.
 - **Before finalizing a change, run and keep green:**
@@ -162,13 +179,14 @@ In addition:
 
 ---
 
-## 10. Checklist before considering a task done
+## 11. Checklist before considering a task done
 
 - [ ] Layers respected (thin router, logic in the service, no data access outside a service).
 - [ ] Inputs validated by schema; data filtered by `current_user`.
 - [ ] No secret/PII in code, logs, or responses.
+- [ ] New/changed user-facing text translated in pt, en, and es (see §3).
 - [ ] New tests covering happy path and error path; full suite passing.
-- [ ] Within the complexity/size limits (section 5).
+- [ ] Within the complexity/size limits (section 6).
 - [ ] Complete typing; lint/type-check/build clean.
 - [ ] Alembic migration created if the schema changed (with `downgrade`).
 - [ ] `.env.example` updated if there is new configuration.
