@@ -27,20 +27,20 @@ def get_current_user(
     db: Session = Depends(get_db),
 ) -> CurrentUser:
     if token is None:
-        raise unauthorized("Credenciais inválidas")
+        raise unauthorized("auth.invalidCredentials")
 
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[ALGORITHM])
         user_id = payload.get("sub")
         email = payload.get("email")
         if user_id is None or email is None:
-            raise unauthorized("Credenciais inválidas")
+            raise unauthorized("auth.invalidCredentials")
     except JWTError:
-        raise unauthorized("Credenciais inválidas") from None
+        raise unauthorized("auth.invalidCredentials") from None
 
     users_service = UsersService(db)
     user = users_service.find_by_id(uuid.UUID(user_id))
     if not user:
-        raise unauthorized("Credenciais inválidas")
+        raise unauthorized("auth.invalidCredentials")
 
     return CurrentUser(user_id=user.id, email=user.email)

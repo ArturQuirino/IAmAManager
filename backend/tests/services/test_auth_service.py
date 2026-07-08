@@ -58,4 +58,4 @@ def test_login_invalid_credentials_raises(db_session: Session) -> None:
         )
 
     assert exc_info.value.status_code == 401
-    assert exc_info.value.detail["message"] == "Credenciais inválidas"
+    assert exc_info.value.detail["errorCode"] == "auth.invalidCredentials"

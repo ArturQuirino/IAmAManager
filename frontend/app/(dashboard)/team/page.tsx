@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { clearToken, getMyTeam, Player } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
 export default function TeamPage() {
   const router = useRouter();
+  const t = useTranslations('team');
   const { isAuthenticated } = useAuth();
   const [teamName, setTeamName] = useState('');
   const [players, setPlayers] = useState<Player[]>([]);
@@ -23,11 +25,11 @@ export default function TeamPage() {
           setPlayers(data.players);
         })
         .catch(() => {
-          setError('Erro ao carregar o time. Tente fazer login novamente.');
+          setError(t('loadError'));
         })
         .finally(() => setLoading(false));
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, t]);
 
   function handleLogout() {
     clearToken();
@@ -51,7 +53,7 @@ export default function TeamPage() {
             onClick={handleLogout}
             className="px-4 py-2 bg-accent text-surface font-semibold rounded-lg"
           >
-            Voltar ao login
+            {t('backToLogin')}
           </button>
         </div>
       </div>
@@ -66,14 +68,16 @@ export default function TeamPage() {
             <span className="text-2xl">⚽</span>
             <div>
               <h1 className="text-xl font-bold text-white">{teamName}</h1>
-              <p className="text-slate-400 text-sm">{players.length} jogadores</p>
+              <p className="text-slate-400 text-sm">
+                {t('playersCount', { count: players.length })}
+              </p>
             </div>
           </div>
           <button
             onClick={handleLogout}
             className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-600 hover:border-slate-500 rounded-lg transition-colors"
           >
-            Sair
+            {t('logout')}
           </button>
         </div>
       </header>
@@ -84,12 +88,24 @@ export default function TeamPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-700/50 bg-surface/50">
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">#</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium">Nome</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">Pos.</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">Idade</th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium">Nacionalidade</th>
-                  <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">OVR</th>
+                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">
+                    {t('columns.number')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-slate-400 font-medium">
+                    {t('columns.name')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">
+                    {t('columns.position')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">
+                    {t('columns.age')}
+                  </th>
+                  <th className="px-4 py-3 text-left text-slate-400 font-medium">
+                    {t('columns.nationality')}
+                  </th>
+                  <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">
+                    {t('columns.overall')}
+                  </th>
                 </tr>
               </thead>
               <tbody>

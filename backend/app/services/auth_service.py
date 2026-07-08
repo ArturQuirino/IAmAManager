@@ -39,6 +39,6 @@ class AuthService:
     def login(self, login_request: LoginRequest) -> TokenResponse:
         user = self.validate_user(login_request.email, login_request.password)
         if not user:
-            raise unauthorized("Credenciais inválidas")
+            raise unauthorized("auth.invalidCredentials")
 
         return TokenResponse(access_token=self.create_access_token(user))

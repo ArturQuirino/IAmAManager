@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "title": "Football Manager Simulator",
+    "description": "Simulador de gestión de fútbol"
+  },
+  "language": {
+    "label": "Idioma"
+  },
+  "login": {
+    "title": "Football Manager",
+    "subtitle": "Inicia sesión para gestionar tu equipo",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "admin@fm.local",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Iniciar sesión",
+    "submitting": "Iniciando sesión..."
+  },
+  "team": {
+    "loadError": "Error al cargar tu equipo. Inicia sesión nuevamente.",
+    "backToLogin": "Volver al inicio de sesión",
+    "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
+    "logout": "Cerrar sesión",
+    "columns": {
+      "number": "#",
+      "name": "Nombre",
+      "position": "Pos.",
+      "age": "Edad",
+      "nationality": "Nacionalidad",
+      "overall": "OVR"
+    }
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo."
+    },
+    "common": {
+      "unknownError": "Ocurrió un error. Inténtalo de nuevo."
+    }
+  }
+}

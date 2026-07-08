@@ -1,0 +1,41 @@
+{
+  "metadata": {
+    "title": "Football Manager Simulator",
+    "description": "Football club management simulator"
+  },
+  "language": {
+    "label": "Language"
+  },
+  "login": {
+    "title": "Football Manager",
+    "subtitle": "Sign in to manage your team",
+    "emailLabel": "Email",
+    "emailPlaceholder": "admin@fm.local",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "submit": "Sign in",
+    "submitting": "Signing in..."
+  },
+  "team": {
+    "loadError": "Failed to load your team. Please sign in again.",
+    "backToLogin": "Back to sign in",
+    "playersCount": "{count, plural, one {# player} other {# players}}",
+    "logout": "Sign out",
+    "columns": {
+      "number": "#",
+      "name": "Name",
+      "position": "Pos.",
+      "age": "Age",
+      "nationality": "Nationality",
+      "overall": "OVR"
+    }
+  },
+  "errors": {
+    "auth": {
+      "invalidCredentials": "Invalid credentials. Please try again."
+    },
+    "common": {
+      "unknownError": "Something went wrong. Please try again."
+    }
+  }
+}

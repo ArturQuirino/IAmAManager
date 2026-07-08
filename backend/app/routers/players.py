@@ -21,6 +21,6 @@ def get_my_team(
     players = players_service.find_by_user_id(current_user.user_id)
 
     return MyTeamResponse(
-        teamName=user.teamName if user else "Meu Time",
+        teamName=user.teamName if user else "",
         players=[PlayerResponse.model_validate(player) for player in players],
     )

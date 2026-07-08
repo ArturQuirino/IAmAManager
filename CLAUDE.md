@@ -161,7 +161,8 @@ In addition:
 ## 9. Error handling and logging
 
 - HTTP errors via the factories in `app/exceptions.py` (e.g. `unauthorized(...)`) — do not instantiate `HTTPException` ad hoc across the code.
-- The API error format is standardized by the handler in `main.py` (`{"message": ...}`). Respect it.
+- The API error format is standardized by the handler in `main.py`: `{"statusCode": ..., "errorCode": ..., "error": ...}`. Respect it.
+- **`errorCode` is a stable, language-agnostic key** (e.g. `"auth.invalidCredentials"`), never a display string — per §3 (Internationalization), the backend does not emit user-facing text. The frontend resolves `errorCode` to a translated message via the `errors` namespace in `messages/*.json` (see `lib/api.ts`'s `ApiError`). Adding a new error path means adding its `errorCode` to all three locale files in the same PR.
 - **Logs:** use the standard `logging`. **Never** log passwords, tokens, JWTs, or PII. An error log includes enough context to diagnose, without sensitive data.
 - Never use `print` for logging in production code.
 

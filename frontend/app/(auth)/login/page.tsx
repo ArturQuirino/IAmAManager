@@ -2,11 +2,14 @@
 
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { login, setToken } from '@/lib/api';
+import { useTranslations } from 'next-intl';
+import { ApiError, login, setToken, UNKNOWN_ERROR_CODE } from '@/lib/api';
 import { useRedirectIfAuthenticated } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
+  const t = useTranslations('login');
+  const tErrors = useTranslations('errors');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -23,8 +26,12 @@ export default function LoginPage() {
       const { access_token } = await login(email, password);
       setToken(access_token);
       router.replace('/team');
-    } catch {
-      setError('Credenciais inválidas. Tente novamente.');
+    } catch (err) {
+      const code =
+        err instanceof ApiError && tErrors.has(err.errorCode)
+          ? err.errorCode
+          : UNKNOWN_ERROR_CODE;
+      setError(tErrors(code));
     } finally {
       setLoading(false);
     }
@@ -38,11 +45,9 @@ export default function LoginPage() {
             <span className="text-3xl">⚽</span>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight">
-            Football Manager
+            {t('title')}
           </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            Entre para gerenciar seu time
-          </p>
+          <p className="text-slate-400 mt-1 text-sm">{t('subtitle')}</p>
         </div>
 
         <form
@@ -55,7 +60,7 @@ export default function LoginPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-300 mb-1.5"
               >
-                Email
+                {t('emailLabel')}
               </label>
               <input
                 id="email"
@@ -65,7 +70,7 @@ export default function LoginPage() {
                 required
                 autoComplete="email"
                 className="w-full px-4 py-2.5 bg-surface border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
-                placeholder="admin@fm.local"
+                placeholder={t('emailPlaceholder')}
               />
             </div>
 
@@ -74,7 +79,7 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-slate-300 mb-1.5"
               >
-                Senha
+                {t('passwordLabel')}
               </label>
               <input
                 id="password"
@@ -84,7 +89,7 @@ export default function LoginPage() {
                 required
                 autoComplete="current-password"
                 className="w-full px-4 py-2.5 bg-surface border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
-                placeholder="••••••••"
+                placeholder={t('passwordPlaceholder')}
               />
             </div>
 
@@ -99,7 +104,7 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full py-2.5 px-4 bg-accent hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-surface font-semibold rounded-lg transition-colors"
             >
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? t('submitting') : t('submit')}
             </button>
           </div>
         </form>

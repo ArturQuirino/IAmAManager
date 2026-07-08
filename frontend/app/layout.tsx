@@ -1,19 +1,35 @@
 import type { Metadata } from 'next';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages, getTranslations } from 'next-intl/server';
+import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import './globals.css';
 
-export const metadata: Metadata = {
-  title: 'Football Manager Simulator',
-  description: 'Simulador de gerenciamento de futebol',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations('metadata');
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="pt-BR">
-      <body>{children}</body>
+    <html lang={locale}>
+      <body>
+        <NextIntlClientProvider messages={messages}>
+          <div className="flex justify-end px-4 py-2">
+            <LanguageSwitcher />
+          </div>
+          {children}
+        </NextIntlClientProvider>
+      </body>
     </html>
   );
 }

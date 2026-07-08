@@ -1,6 +1,8 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import messages from '@/messages/pt.json';
 
 const { replace, loginMock, setTokenMock } = vi.hoisted(() => ({
   replace: vi.fn(),
@@ -14,13 +16,28 @@ vi.mock('next/navigation', () => ({
 
 // getToken is used by useRedirectIfAuthenticated (rendered by the page).
 // Returning null keeps that redirect effect inert during these tests.
-vi.mock('@/lib/api', () => ({
-  login: loginMock,
-  setToken: setTokenMock,
-  getToken: () => null,
-}));
+// ApiError/UNKNOWN_ERROR_CODE come from the real module so `instanceof`
+// checks in the page component still work against the mocked rejections.
+vi.mock('@/lib/api', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/api')>();
+  return {
+    ...actual,
+    login: loginMock,
+    setToken: setTokenMock,
+    getToken: () => null,
+  };
+});
 
+import { ApiError } from '@/lib/api';
 import LoginPage from '@/app/(auth)/login/page';
+
+function renderLoginPage() {
+  return render(
+    <NextIntlClientProvider locale="pt" messages={messages}>
+      <LoginPage />
+    </NextIntlClientProvider>,
+  );
+}
 
 beforeEach(() => {
   replace.mockClear();
@@ -42,7 +59,7 @@ async function fillAndSubmit(
 describe('LoginPage', () => {
   it('logs in and redirects to /team on success', async () => {
     loginMock.mockResolvedValue({ access_token: 'jwt-123' });
-    render(<LoginPage />);
+    renderLoginPage();
 
     await fillAndSubmit();
 
@@ -53,14 +70,28 @@ describe('LoginPage', () => {
     expect(replace).toHaveBeenCalledWith('/team');
   });
 
-  it('shows a Portuguese error message on failure', async () => {
-    loginMock.mockRejectedValue(new Error('bad credentials'));
-    render(<LoginPage />);
+  it('shows the translated message for a known backend error code', async () => {
+    loginMock.mockRejectedValue(
+      new ApiError('auth.invalidCredentials', 401),
+    );
+    renderLoginPage();
 
     await fillAndSubmit();
 
     expect(
       await screen.findByText('Credenciais inválidas. Tente novamente.'),
+    ).toBeInTheDocument();
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a generic message for an unrecognized error', async () => {
+    loginMock.mockRejectedValue(new Error('network down'));
+    renderLoginPage();
+
+    await fillAndSubmit();
+
+    expect(
+      await screen.findByText('Ocorreu um erro. Tente novamente.'),
     ).toBeInTheDocument();
     expect(replace).not.toHaveBeenCalled();
   });
@@ -72,7 +103,7 @@ describe('LoginPage', () => {
         resolveLogin = resolve;
       }),
     );
-    render(<LoginPage />);
+    renderLoginPage();
 
     await fillAndSubmit();
 

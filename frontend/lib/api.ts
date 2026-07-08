@@ -1,5 +1,20 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || '/api';
 
+// Falls back to this key (a path into the "errors" namespace) whenever the
+// backend response doesn't carry a recognized errorCode, e.g. network
+// failures or unhandled 5xx/422 responses.
+export const UNKNOWN_ERROR_CODE = 'common.unknownError';
+
+export class ApiError extends Error {
+  constructor(
+    public readonly errorCode: string,
+    public readonly status: number,
+  ) {
+    super(errorCode);
+    this.name = 'ApiError';
+  }
+}
+
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
   return localStorage.getItem('fm_token');
@@ -33,8 +48,10 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || 'Erro na requisição');
+    const body = await response.json().catch(() => ({}));
+    const errorCode =
+      typeof body.errorCode === 'string' ? body.errorCode : UNKNOWN_ERROR_CODE;
+    throw new ApiError(errorCode, response.status);
   }
 
   return response.json();

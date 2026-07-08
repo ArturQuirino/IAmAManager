@@ -27,7 +27,7 @@ def test_login_wrong_password_returns_401(
     )
 
     assert response.status_code == 401
-    assert response.json()["message"] == "Credenciais inválidas"
+    assert response.json()["errorCode"] == "auth.invalidCredentials"
 
 
 def test_login_invalid_email_returns_422(client: TestClient) -> None:

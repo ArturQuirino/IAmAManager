@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { apiFetch, clearToken, getToken, setToken } from '@/lib/api';
+import { ApiError, apiFetch, clearToken, getToken, setToken } from '@/lib/api';
 
 function okResponse(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -63,20 +63,22 @@ describe('apiFetch', () => {
     expect(data).toEqual({ teamName: 'FC' });
   });
 
-  it('throws the API error message on a non-ok response', async () => {
+  it('throws an ApiError carrying the backend errorCode on a non-ok response', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 401,
-      json: async () => ({ message: 'Credenciais inválidas' }),
+      json: async () => ({ errorCode: 'auth.invalidCredentials' }),
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(apiFetch('/auth/login')).rejects.toThrow(
-      'Credenciais inválidas',
-    );
+    const error = await apiFetch('/auth/login').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.errorCode).toBe('auth.invalidCredentials');
+    expect(error.status).toBe(401);
   });
 
-  it('falls back to a generic message when the body has none', async () => {
+  it('falls back to a generic error code when the body has none', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
@@ -86,6 +88,9 @@ describe('apiFetch', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    await expect(apiFetch('/x')).rejects.toThrow('Erro na requisição');
+    const error = await apiFetch('/x').catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.errorCode).toBe('common.unknownError');
   });
 });
