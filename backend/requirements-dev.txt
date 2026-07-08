@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Testing stack. Kept separate from requirements.txt so the production image
+# stays lean (only runtime deps are installed there).
+pytest>=8.2
+httpx>=0.27        # required by fastapi.testclient.TestClient
+pytest-cov>=5.0    # coverage reporting (target: >=80% in services/)
