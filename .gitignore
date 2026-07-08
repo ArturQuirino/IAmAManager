@@ -5,6 +5,14 @@ dist/
 *.log
 .env
 
+# Python / tests
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+
 # Terraform
 .terraform/
 *.tfstate
