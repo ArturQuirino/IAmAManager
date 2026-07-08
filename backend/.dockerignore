@@ -1,3 +1,6 @@
-node_modules
-dist
+__pycache__
+*.pyc
+*.pyo
+.venv
 .git
+.pytest_cache

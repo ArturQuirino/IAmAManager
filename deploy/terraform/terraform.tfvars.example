@@ -1,0 +1,10 @@
+aws_region        = "us-east-1"
+project_name      = "football-manager"
+image_tag         = "latest"
+db_instance_class = "db.t4g.micro"
+
+# Opcional: origens CORS (padrão usa o DNS do ALB)
+# cors_origins = "https://app.seudominio.com"
+
+# Opcional: HTTPS com certificado ACM
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxxxxx"

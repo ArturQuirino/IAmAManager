@@ -6,7 +6,7 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_prod_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -16,16 +16,16 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
     ports:
       - "3001:3000"
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: development
-      RUN_SEED: "true"
-      POSTGRES_HOST: ${POSTGRES_HOST}
+      NODE_ENV: production
+      RUN_SEED: ${RUN_SEED:-true}
+      POSTGRES_HOST: postgres
       POSTGRES_PORT: ${POSTGRES_PORT}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -33,23 +33,19 @@ services:
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
       CORS_ORIGINS: http://localhost:3000
-    volumes:
-      - ./backend:/app
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
+      args:
+        BACKEND_INTERNAL_URL: http://backend:3000
     ports:
       - "3000:3000"
     depends_on:
       - backend
     environment:
       BACKEND_INTERNAL_URL: http://backend:3000
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
 
 volumes:
-  postgres_data:
+  postgres_prod_data:

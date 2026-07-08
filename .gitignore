@@ -4,3 +4,11 @@ dist/
 .env.local
 *.log
 .env
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+*.tfvars
+!*.tfvars.example
