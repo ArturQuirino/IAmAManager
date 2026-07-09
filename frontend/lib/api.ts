@@ -123,3 +123,44 @@ export interface StandingsResponse {
 export async function getStandings(): Promise<StandingsResponse> {
   return apiFetch<StandingsResponse>('/competition/standings');
 }
+
+export interface SquadResponse {
+  teamName: string;
+  players: Player[];
+}
+
+export async function getSquad(): Promise<SquadResponse> {
+  return apiFetch<SquadResponse>('/squad');
+}
+
+// Removing a player returns the updated squad, so the caller can refresh in a
+// single round-trip.
+export async function removePlayer(playerId: string): Promise<SquadResponse> {
+  return apiFetch<SquadResponse>(`/squad/players/${playerId}`, {
+    method: 'DELETE',
+  });
+}
+
+// A youth prospect shares the player shape; it becomes a Player unchanged when
+// promoted into the squad.
+export type YouthCandidate = Player;
+
+export interface YouthResponse {
+  candidates: YouthCandidate[];
+  squadSize: number;
+  maxSquadSize: number;
+}
+
+export async function getYouth(): Promise<YouthResponse> {
+  return apiFetch<YouthResponse>('/youth');
+}
+
+// Adding a prospect returns the refreshed pool (and squad size), so the caller
+// can update the page without a second request.
+export async function addYouthPlayer(
+  candidateId: string,
+): Promise<YouthResponse> {
+  return apiFetch<YouthResponse>(`/youth/${candidateId}/add`, {
+    method: 'POST',
+  });
+}

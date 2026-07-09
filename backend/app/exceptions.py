@@ -1,6 +1,24 @@
 from fastapi import HTTPException, status
 
 
+def not_found(error_code: str) -> HTTPException:
+    """Raise a 404 carrying a stable, language-agnostic error code.
+
+    Used both for genuinely missing resources and for authorization (IDOR):
+    a resource that belongs to another team is reported as not found so the
+    response never confirms its existence. As elsewhere, the frontend owns the
+    translated copy; the backend only emits the `error_code`.
+    """
+    return HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail={
+            "statusCode": 404,
+            "errorCode": error_code,
+            "error": "Not Found",
+        },
+    )
+
+
 def unauthorized(error_code: str) -> HTTPException:
     """Raise a 401 carrying a stable, language-agnostic error code.
 

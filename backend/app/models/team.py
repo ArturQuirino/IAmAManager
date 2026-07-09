@@ -72,6 +72,9 @@ class Team(Base):
     players: Mapped[list["Player"]] = relationship(
         "Player", back_populates="team", cascade="all, delete-orphan"
     )
+    youth_candidates: Mapped[list["YouthCandidate"]] = relationship(
+        "YouthCandidate", back_populates="team", cascade="all, delete-orphan"
+    )
 
     @property
     def goalDifference(self) -> int:
@@ -82,3 +85,4 @@ class Team(Base):
 from app.models.division import Division  # noqa: E402
 from app.models.player import Player  # noqa: E402
 from app.models.user import User  # noqa: E402
+from app.models.youth_candidate import YouthCandidate  # noqa: E402

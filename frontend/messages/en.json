@@ -79,10 +79,46 @@
       "relegation": "Relegation"
     }
   },
+  "squad": {
+    "title": "Squad",
+    "playersCount": "{count, plural, one {# player} other {# players}}",
+    "loadError": "Failed to load your squad. Please try again.",
+    "backToTeam": "Back to team",
+    "release": "Release",
+    "releaseConfirm": "Release {name} from the squad?",
+    "confirmRelease": "Release",
+    "cancel": "Cancel",
+    "detailTitle": "Player details",
+    "close": "Close",
+    "overall": "Overall"
+  },
+  "youth": {
+    "title": "Youth academy",
+    "subtitle": "This week's prospects",
+    "loadError": "Failed to load the youth academy. Please try again.",
+    "backToTeam": "Back to team",
+    "add": "Add to squad",
+    "adding": "Adding...",
+    "squadCount": "Squad {size}/{max}",
+    "fullNotice": "Your squad is full. Release a player before adding a prospect.",
+    "overall": "Overall"
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Invalid credentials. Please try again.",
       "emailAlreadyExists": "That email is already registered. Try signing in."
+    },
+    "squad": {
+      "minGoalkeeper": "You must keep at least one goalkeeper.",
+      "minOutfield": "You must keep at least ten outfield players.",
+      "full": "Your squad is full (40 players). Release a player first.",
+      "playerNotFound": "That player could not be found."
+    },
+    "youth": {
+      "candidateNotFound": "That prospect could not be found."
+    },
+    "team": {
+      "notFound": "We couldn't find your team."
     },
     "common": {
       "unknownError": "Something went wrong. Please try again."

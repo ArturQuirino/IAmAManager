@@ -79,10 +79,46 @@
       "relegation": "Descenso"
     }
   },
+  "squad": {
+    "title": "Plantilla",
+    "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
+    "loadError": "Error al cargar tu plantilla. Inténtalo de nuevo.",
+    "backToTeam": "Volver al equipo",
+    "release": "Liberar",
+    "releaseConfirm": "¿Liberar a {name} de la plantilla?",
+    "confirmRelease": "Liberar",
+    "cancel": "Cancelar",
+    "detailTitle": "Detalles del jugador",
+    "close": "Cerrar",
+    "overall": "General"
+  },
+  "youth": {
+    "title": "Cantera",
+    "subtitle": "Promesas de la semana",
+    "loadError": "Error al cargar la cantera. Inténtalo de nuevo.",
+    "backToTeam": "Volver al equipo",
+    "add": "Añadir a la plantilla",
+    "adding": "Añadiendo...",
+    "squadCount": "Plantilla {size}/{max}",
+    "fullNotice": "Tu plantilla está llena. Libera a un jugador antes de añadir una promesa.",
+    "overall": "General"
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo.",
       "emailAlreadyExists": "Ese correo ya está registrado. Intenta iniciar sesión."
+    },
+    "squad": {
+      "minGoalkeeper": "Debes mantener al menos un portero.",
+      "minOutfield": "Debes mantener al menos diez jugadores de campo.",
+      "full": "Tu plantilla está llena (40 jugadores). Libera a un jugador primero.",
+      "playerNotFound": "No se encontró al jugador."
+    },
+    "youth": {
+      "candidateNotFound": "No se encontró la promesa."
+    },
+    "team": {
+      "notFound": "No encontramos tu equipo."
     },
     "common": {
       "unknownError": "Ocurrió un error. Inténtalo de nuevo."

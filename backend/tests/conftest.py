@@ -21,6 +21,7 @@ import app.models.division  # noqa: F401
 import app.models.player  # noqa: F401
 import app.models.team  # noqa: F401
 import app.models.user  # noqa: F401
+import app.models.youth_candidate  # noqa: F401
 from app.database.base import Base
 from app.database.session import get_db
 from app.main import app

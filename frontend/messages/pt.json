@@ -79,10 +79,46 @@
       "relegation": "Rebaixamento"
     }
   },
+  "squad": {
+    "title": "Elenco",
+    "playersCount": "{count, plural, one {# jogador} other {# jogadores}}",
+    "loadError": "Erro ao carregar o elenco. Tente novamente.",
+    "backToTeam": "Voltar ao time",
+    "release": "Dispensar",
+    "releaseConfirm": "Dispensar {name} do elenco?",
+    "confirmRelease": "Dispensar",
+    "cancel": "Cancelar",
+    "detailTitle": "Detalhes do jogador",
+    "close": "Fechar",
+    "overall": "Geral"
+  },
+  "youth": {
+    "title": "Base",
+    "subtitle": "Promessas da semana",
+    "loadError": "Erro ao carregar a base. Tente novamente.",
+    "backToTeam": "Voltar ao time",
+    "add": "Adicionar ao elenco",
+    "adding": "Adicionando...",
+    "squadCount": "Elenco {size}/{max}",
+    "fullNotice": "Seu elenco está cheio. Dispense um jogador antes de adicionar uma promessa.",
+    "overall": "Geral"
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciais inválidas. Tente novamente.",
       "emailAlreadyExists": "Este email já está cadastrado. Tente entrar."
+    },
+    "squad": {
+      "minGoalkeeper": "Você precisa manter pelo menos um goleiro.",
+      "minOutfield": "Você precisa manter pelo menos dez jogadores de linha.",
+      "full": "Seu elenco está cheio (40 jogadores). Dispense um jogador primeiro.",
+      "playerNotFound": "Jogador não encontrado."
+    },
+    "youth": {
+      "candidateNotFound": "Promessa não encontrada."
+    },
+    "team": {
+      "notFound": "Não encontramos o seu time."
     },
     "common": {
       "unknownError": "Ocorreu um erro. Tente novamente."

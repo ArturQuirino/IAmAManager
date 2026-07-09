@@ -75,3 +75,25 @@ def make_player(
         team_id=team_id,
         is_starter=is_starter,
     )
+
+
+_OUTFIELD_CYCLE = (PlayerPosition.DEF, PlayerPosition.MID, PlayerPosition.ATT)
+
+
+def make_squad(
+    db: Session,
+    team_id: uuid.UUID,
+    *,
+    goalkeepers: int = 1,
+    outfield: int = 10,
+) -> None:
+    """Populate a team with a valid minimum squad (1 GK + 10 outfield)."""
+    for index in range(goalkeepers):
+        make_player(db, team_id, name=f"GK{index}", position=PlayerPosition.GK)
+    for index in range(outfield):
+        make_player(
+            db,
+            team_id,
+            name=f"OUT{index}",
+            position=_OUTFIELD_CYCLE[index % len(_OUTFIELD_CYCLE)],
+        )
