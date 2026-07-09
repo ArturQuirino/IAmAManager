@@ -103,6 +103,21 @@
     "fullNotice": "Your squad is full. Release a player before adding a prospect.",
     "overall": "Overall"
   },
+  "tactics": {
+    "title": "Tactics",
+    "subtitle": "Pick your starting eleven",
+    "loadError": "Failed to load your tactics. Please try again.",
+    "backToTeam": "Back to team",
+    "selected": "Selected",
+    "selectedCount": "{count}/11",
+    "formation": "Formation",
+    "formationEmpty": "Not set",
+    "inXi": "XI",
+    "requirements": "Select exactly 11 players with exactly one goalkeeper.",
+    "save": "Save lineup",
+    "saving": "Saving...",
+    "saved": "Lineup saved."
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Invalid credentials. Please try again.",
@@ -116,6 +131,11 @@
     },
     "youth": {
       "candidateNotFound": "That prospect could not be found."
+    },
+    "tactics": {
+      "mustBe11": "Your starting XI must have exactly eleven players.",
+      "needExactlyOneGk": "Your starting XI must have exactly one goalkeeper.",
+      "playerNotFound": "That player could not be found."
     },
     "team": {
       "notFound": "We couldn't find your team."

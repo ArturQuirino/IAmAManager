@@ -103,6 +103,21 @@
     "fullNotice": "Seu elenco está cheio. Dispense um jogador antes de adicionar uma promessa.",
     "overall": "Geral"
   },
+  "tactics": {
+    "title": "Tática",
+    "subtitle": "Escale seus onze titulares",
+    "loadError": "Erro ao carregar a tática. Tente novamente.",
+    "backToTeam": "Voltar ao time",
+    "selected": "Selecionados",
+    "selectedCount": "{count}/11",
+    "formation": "Formação",
+    "formationEmpty": "Não definida",
+    "inXi": "XI",
+    "requirements": "Selecione exatamente 11 jogadores com exatamente um goleiro.",
+    "save": "Salvar escalação",
+    "saving": "Salvando...",
+    "saved": "Escalação salva."
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciais inválidas. Tente novamente.",
@@ -116,6 +131,11 @@
     },
     "youth": {
       "candidateNotFound": "Promessa não encontrada."
+    },
+    "tactics": {
+      "mustBe11": "Sua escalação titular deve ter exatamente onze jogadores.",
+      "needExactlyOneGk": "Sua escalação titular deve ter exatamente um goleiro.",
+      "playerNotFound": "Jogador não encontrado."
     },
     "team": {
       "notFound": "Não encontramos o seu time."

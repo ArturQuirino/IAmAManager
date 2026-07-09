@@ -35,6 +35,24 @@ def unauthorized(error_code: str) -> HTTPException:
     )
 
 
+def unprocessable(error_code: str) -> HTTPException:
+    """Raise a 422 carrying a stable, language-agnostic error code.
+
+    Used when a request is well-formed but violates a composition rule the
+    schema cannot express (e.g. a starting XI that is not exactly one
+    goalkeeper plus ten outfield players). As elsewhere, the frontend owns the
+    translated copy; the backend only emits the `error_code`.
+    """
+    return HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        detail={
+            "statusCode": 422,
+            "errorCode": error_code,
+            "error": "Unprocessable Entity",
+        },
+    )
+
+
 def conflict(error_code: str) -> HTTPException:
     """Raise a 409 carrying a stable, language-agnostic error code.
 

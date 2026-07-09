@@ -141,6 +141,28 @@ export async function removePlayer(playerId: string): Promise<SquadResponse> {
   });
 }
 
+export interface TacticsResponse {
+  // Outfield shape of the current XI (e.g. "4-3-3"); null when none is set.
+  formation: string | null;
+  starters: Player[];
+  bench: Player[];
+}
+
+export async function getTactics(): Promise<TacticsResponse> {
+  return apiFetch<TacticsResponse>('/tactics');
+}
+
+// Persisting the starting XI returns the updated starters/bench (and derived
+// formation), so the caller can refresh in a single round-trip.
+export async function setStartingXi(
+  playerIds: string[],
+): Promise<TacticsResponse> {
+  return apiFetch<TacticsResponse>('/tactics/starting-xi', {
+    method: 'PUT',
+    body: JSON.stringify({ playerIds }),
+  });
+}
+
 // A youth prospect shares the player shape; it becomes a Player unchanged when
 // promoted into the squad.
 export type YouthCandidate = Player;

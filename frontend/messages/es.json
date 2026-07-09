@@ -103,6 +103,21 @@
     "fullNotice": "Tu plantilla está llena. Libera a un jugador antes de añadir una promesa.",
     "overall": "General"
   },
+  "tactics": {
+    "title": "Táctica",
+    "subtitle": "Elige tu once inicial",
+    "loadError": "Error al cargar tu táctica. Inténtalo de nuevo.",
+    "backToTeam": "Volver al equipo",
+    "selected": "Seleccionados",
+    "selectedCount": "{count}/11",
+    "formation": "Formación",
+    "formationEmpty": "Sin definir",
+    "inXi": "XI",
+    "requirements": "Selecciona exactamente 11 jugadores con exactamente un portero.",
+    "save": "Guardar alineación",
+    "saving": "Guardando...",
+    "saved": "Alineación guardada."
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo.",
@@ -116,6 +131,11 @@
     },
     "youth": {
       "candidateNotFound": "No se encontró la promesa."
+    },
+    "tactics": {
+      "mustBe11": "Tu once inicial debe tener exactamente once jugadores.",
+      "needExactlyOneGk": "Tu once inicial debe tener exactamente un portero.",
+      "playerNotFound": "No se encontró al jugador."
     },
     "team": {
       "notFound": "No encontramos tu equipo."

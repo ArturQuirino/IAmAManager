@@ -7,7 +7,15 @@ from fastapi.responses import JSONResponse
 
 from app.config.settings import get_settings
 from app.database.session import SessionLocal
-from app.routers import auth, competition, health, players, squad, youth
+from app.routers import (
+    auth,
+    competition,
+    health,
+    players,
+    squad,
+    tactics,
+    youth,
+)
 from app.seed.seed import run_seed
 
 logger = logging.getLogger(__name__)
@@ -49,4 +57,5 @@ app.include_router(auth.router, prefix="/api")
 app.include_router(players.router, prefix="/api")
 app.include_router(competition.router, prefix="/api")
 app.include_router(squad.router, prefix="/api")
+app.include_router(tactics.router, prefix="/api")
 app.include_router(youth.router, prefix="/api")
