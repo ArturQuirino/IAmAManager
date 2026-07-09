@@ -11,6 +11,7 @@ from app.routers import (
     auth,
     competition,
     health,
+    matches,
     players,
     squad,
     tactics,
@@ -59,3 +60,4 @@ app.include_router(competition.router, prefix="/api")
 app.include_router(squad.router, prefix="/api")
 app.include_router(tactics.router, prefix="/api")
 app.include_router(youth.router, prefix="/api")
+app.include_router(matches.router, prefix="/api")

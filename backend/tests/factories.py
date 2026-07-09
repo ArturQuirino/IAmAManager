@@ -9,6 +9,8 @@ import uuid
 
 from sqlalchemy.orm import Session
 
+from app.models.division import Division
+from app.models.match import Match
 from app.models.player import Player, PlayerPosition
 from app.models.team import Team
 from app.models.user import User
@@ -97,3 +99,60 @@ def make_squad(
             name=f"OUT{index}",
             position=_OUTFIELD_CYCLE[index % len(_OUTFIELD_CYCLE)],
         )
+
+
+def make_starting_xi(
+    db: Session,
+    team_id: uuid.UUID,
+    *,
+    prefix: str = "",
+) -> list[Player]:
+    """Create and mark a valid starting XI (1 GK + 4 DEF + 3 MID + 3 ATT)."""
+    lines = (
+        [PlayerPosition.GK]
+        + [PlayerPosition.DEF] * 4
+        + [PlayerPosition.MID] * 3
+        + [PlayerPosition.ATT] * 3
+    )
+    return [
+        make_player(
+            db,
+            team_id,
+            name=f"{prefix}{position.value}{index}",
+            position=position,
+            is_starter=True,
+        )
+        for index, position in enumerate(lines)
+    ]
+
+
+def make_division(
+    db: Session, *, level: int = 1, season_number: int = 1
+) -> Division:
+    division = Division(level=level, seasonNumber=season_number)
+    db.add(division)
+    db.commit()
+    db.refresh(division)
+    return division
+
+
+def make_match(
+    db: Session,
+    *,
+    division_id: uuid.UUID,
+    home_team_id: uuid.UUID,
+    away_team_id: uuid.UUID,
+    season_number: int = 1,
+    round_number: int = 1,
+) -> Match:
+    match = Match(
+        divisionId=division_id,
+        seasonNumber=season_number,
+        round=round_number,
+        homeTeamId=home_team_id,
+        awayTeamId=away_team_id,
+    )
+    db.add(match)
+    db.commit()
+    db.refresh(match)
+    return match

@@ -118,6 +118,31 @@
     "saving": "Saving...",
     "saved": "Lineup saved."
   },
+  "matches": {
+    "title": "Matches",
+    "subtitle": "Your fixtures and results",
+    "loadError": "Failed to load your matches. Please try again.",
+    "backToTeam": "Back to team",
+    "empty": "No matches scheduled yet.",
+    "round": "Round {round}",
+    "home": "Home",
+    "away": "Away",
+    "notPlayed": "Not played",
+    "simulate": "Simulate",
+    "simulating": "Simulating...",
+    "viewReplay": "Replay",
+    "replayTitle": "Match replay",
+    "close": "Close",
+    "noEvents": "No events to replay.",
+    "outcomes": {
+      "goal": "⚽ Goal! {player} scores",
+      "dribbleLost": "{player} loses the ball dribbling",
+      "tackleWon": "Tackled — attack broken up",
+      "shotWide": "{player} shoots wide",
+      "saved": "Saved! {player}'s shot stopped",
+      "passIntercepted": "{player}'s pass is intercepted"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Invalid credentials. Please try again.",
@@ -136,6 +161,11 @@
       "mustBe11": "Your starting XI must have exactly eleven players.",
       "needExactlyOneGk": "Your starting XI must have exactly one goalkeeper.",
       "playerNotFound": "That player could not be found."
+    },
+    "match": {
+      "notFound": "That match could not be found.",
+      "alreadyPlayed": "That match has already been played.",
+      "lineupIncomplete": "Both teams need a valid starting XI first."
     },
     "team": {
       "notFound": "We couldn't find your team."

@@ -186,3 +186,64 @@ export async function addYouthPlayer(
     method: 'POST',
   });
 }
+
+export interface MatchSummary {
+  id: string;
+  round: number;
+  seasonNumber: number;
+  // From the signed-in team's perspective.
+  isHome: boolean;
+  opponentTeamId: string;
+  opponentName: string;
+  // Null until the match has been played.
+  homeScore: number | null;
+  awayScore: number | null;
+  played: boolean;
+  scheduledDate: string | null;
+}
+
+export interface MatchListResponse {
+  matches: MatchSummary[];
+}
+
+export interface MatchEvent {
+  minute: number;
+  isHome: boolean;
+  playType: string;
+  // Stable outcome code (e.g. "goal", "saved"), translated on the client.
+  outcome: string;
+  player: string;
+  homeScore: number;
+  awayScore: number;
+}
+
+export interface MatchDetail {
+  id: string;
+  round: number;
+  seasonNumber: number;
+  isHome: boolean;
+  homeTeamId: string;
+  homeTeamName: string;
+  awayTeamId: string;
+  awayTeamName: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  played: boolean;
+  events: MatchEvent[];
+}
+
+export async function getMatches(): Promise<MatchListResponse> {
+  return apiFetch<MatchListResponse>('/matches');
+}
+
+export async function getMatch(matchId: string): Promise<MatchDetail> {
+  return apiFetch<MatchDetail>(`/matches/${matchId}`);
+}
+
+// Simulating a match returns its full detail (score + minute-by-minute events),
+// so the caller can show the result and replay without a second request.
+export async function simulateMatch(matchId: string): Promise<MatchDetail> {
+  return apiFetch<MatchDetail>(`/matches/${matchId}/simulate`, {
+    method: 'POST',
+  });
+}

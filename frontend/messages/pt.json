@@ -118,6 +118,31 @@
     "saving": "Salvando...",
     "saved": "Escalação salva."
   },
+  "matches": {
+    "title": "Partidas",
+    "subtitle": "Seus jogos e resultados",
+    "loadError": "Erro ao carregar as partidas. Tente novamente.",
+    "backToTeam": "Voltar ao time",
+    "empty": "Nenhuma partida agendada ainda.",
+    "round": "Rodada {round}",
+    "home": "Casa",
+    "away": "Fora",
+    "notPlayed": "Não jogada",
+    "simulate": "Simular",
+    "simulating": "Simulando...",
+    "viewReplay": "Replay",
+    "replayTitle": "Replay da partida",
+    "close": "Fechar",
+    "noEvents": "Nenhum lance para reproduzir.",
+    "outcomes": {
+      "goal": "⚽ Gol! {player} marca",
+      "dribbleLost": "{player} perde a bola no drible",
+      "tackleWon": "Desarme — ataque interrompido",
+      "shotWide": "{player} finaliza para fora",
+      "saved": "Defendeu! Chute de {player} parado",
+      "passIntercepted": "Passe de {player} é interceptado"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciais inválidas. Tente novamente.",
@@ -136,6 +161,11 @@
       "mustBe11": "Sua escalação titular deve ter exatamente onze jogadores.",
       "needExactlyOneGk": "Sua escalação titular deve ter exatamente um goleiro.",
       "playerNotFound": "Jogador não encontrado."
+    },
+    "match": {
+      "notFound": "Partida não encontrada.",
+      "alreadyPlayed": "Essa partida já foi jogada.",
+      "lineupIncomplete": "Os dois times precisam de uma escalação titular válida antes."
     },
     "team": {
       "notFound": "Não encontramos o seu time."

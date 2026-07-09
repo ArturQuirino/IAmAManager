@@ -118,6 +118,31 @@
     "saving": "Guardando...",
     "saved": "Alineación guardada."
   },
+  "matches": {
+    "title": "Partidos",
+    "subtitle": "Tus partidos y resultados",
+    "loadError": "Error al cargar los partidos. Inténtalo de nuevo.",
+    "backToTeam": "Volver al equipo",
+    "empty": "Aún no hay partidos programados.",
+    "round": "Jornada {round}",
+    "home": "Local",
+    "away": "Visitante",
+    "notPlayed": "No jugado",
+    "simulate": "Simular",
+    "simulating": "Simulando...",
+    "viewReplay": "Repetición",
+    "replayTitle": "Repetición del partido",
+    "close": "Cerrar",
+    "noEvents": "No hay jugadas para reproducir.",
+    "outcomes": {
+      "goal": "⚽ ¡Gol! {player} marca",
+      "dribbleLost": "{player} pierde el balón en el regate",
+      "tackleWon": "Entrada — ataque cortado",
+      "shotWide": "{player} dispara fuera",
+      "saved": "¡Atajada! Disparo de {player} detenido",
+      "passIntercepted": "El pase de {player} es interceptado"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo.",
@@ -136,6 +161,11 @@
       "mustBe11": "Tu once inicial debe tener exactamente once jugadores.",
       "needExactlyOneGk": "Tu once inicial debe tener exactamente un portero.",
       "playerNotFound": "No se encontró al jugador."
+    },
+    "match": {
+      "notFound": "No se encontró el partido.",
+      "alreadyPlayed": "Ese partido ya se jugó.",
+      "lineupIncomplete": "Ambos equipos necesitan una alineación titular válida primero."
     },
     "team": {
       "notFound": "No encontramos tu equipo."
