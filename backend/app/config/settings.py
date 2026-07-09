@@ -34,7 +34,7 @@ class Settings(BaseSettings):
     jwt_secret: str = "local_dev_secret_change_in_production"
     jwt_expires_in: str = "7d"
 
-    node_env: str = "development"
+    app_env: str = "development"
     run_seed: str = "false"
     cors_origins: str = "http://localhost:3000"
 
@@ -55,11 +55,11 @@ class Settings(BaseSettings):
 
     @property
     def should_seed(self) -> bool:
-        return self.run_seed.lower() == "true" or self.node_env == "development"
+        return self.run_seed.lower() == "true" or self.app_env == "development"
 
     @property
     def is_production(self) -> bool:
-        return self.node_env == "production"
+        return self.app_env == "production"
 
 
 @lru_cache

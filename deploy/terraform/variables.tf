@@ -57,3 +57,9 @@ variable "certificate_arn" {
   type        = string
   default     = ""
 }
+
+variable "jobs_timezone" {
+  description = "IANA timezone used to evaluate the scheduled jobs cron expressions"
+  type        = string
+  default     = "America/Sao_Paulo"
+}

@@ -17,6 +17,7 @@ from sqlalchemy.pool import StaticPool
 # Import the models so their tables register on Base.metadata *before*
 # create_all runs. app/models/__init__.py is empty, so without these imports
 # the metadata would be empty and no tables would be created.
+import app.models.division  # noqa: F401
 import app.models.player  # noqa: F401
 import app.models.team  # noqa: F401
 import app.models.user  # noqa: F401

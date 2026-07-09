@@ -23,7 +23,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: development
+      APP_ENV: development
       RUN_SEED: "true"
       POSTGRES_HOST: ${POSTGRES_HOST}
       POSTGRES_PORT: ${POSTGRES_PORT}

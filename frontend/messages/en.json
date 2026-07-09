@@ -39,6 +39,30 @@
       "ATT": "ATT"
     }
   },
+  "league": {
+    "title": "League table",
+    "subtitle": "Division {level} · Season {season}",
+    "loadError": "Failed to load the table. Please try again.",
+    "backToTeam": "Back to team",
+    "logout": "Sign out",
+    "empty": "Your team is not in a division yet.",
+    "columns": {
+      "position": "#",
+      "team": "Team",
+      "played": "P",
+      "wins": "W",
+      "draws": "D",
+      "losses": "L",
+      "goalsFor": "GF",
+      "goalsAgainst": "GA",
+      "goalDifference": "GD",
+      "points": "Pts"
+    },
+    "zones": {
+      "promotion": "Promotion",
+      "relegation": "Relegation"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Invalid credentials. Please try again."

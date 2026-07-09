@@ -39,6 +39,30 @@
       "ATT": "DEL"
     }
   },
+  "league": {
+    "title": "Tabla de la liga",
+    "subtitle": "División {level} · Temporada {season}",
+    "loadError": "Error al cargar la tabla. Inténtalo de nuevo.",
+    "backToTeam": "Volver al equipo",
+    "logout": "Cerrar sesión",
+    "empty": "Tu equipo aún no está en una división.",
+    "columns": {
+      "position": "#",
+      "team": "Equipo",
+      "played": "PJ",
+      "wins": "G",
+      "draws": "E",
+      "losses": "P",
+      "goalsFor": "GF",
+      "goalsAgainst": "GC",
+      "goalDifference": "DG",
+      "points": "Pts"
+    },
+    "zones": {
+      "promotion": "Ascenso",
+      "relegation": "Descenso"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo."

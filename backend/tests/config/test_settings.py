@@ -24,6 +24,6 @@ def test_cors_origins_list_splits_and_strips() -> None:
 
 
 def test_should_seed() -> None:
-    assert Settings(node_env="development", run_seed="false").should_seed is True
-    assert Settings(node_env="production", run_seed="false").should_seed is False
-    assert Settings(node_env="production", run_seed="true").should_seed is True
+    assert Settings(app_env="development", run_seed="false").should_seed is True
+    assert Settings(app_env="production", run_seed="false").should_seed is False
+    assert Settings(app_env="production", run_seed="true").should_seed is True

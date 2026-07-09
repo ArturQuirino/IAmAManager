@@ -39,6 +39,30 @@
       "ATT": "ATA"
     }
   },
+  "league": {
+    "title": "Tabela da liga",
+    "subtitle": "Divisão {level} · Temporada {season}",
+    "loadError": "Erro ao carregar a tabela. Tente novamente.",
+    "backToTeam": "Voltar ao time",
+    "logout": "Sair",
+    "empty": "Seu time ainda não está em uma divisão.",
+    "columns": {
+      "position": "#",
+      "team": "Time",
+      "played": "J",
+      "wins": "V",
+      "draws": "E",
+      "losses": "D",
+      "goalsFor": "GP",
+      "goalsAgainst": "GC",
+      "goalDifference": "SG",
+      "points": "Pts"
+    },
+    "zones": {
+      "promotion": "Promoção",
+      "relegation": "Rebaixamento"
+    }
+  },
   "errors": {
     "auth": {
       "invalidCredentials": "Credenciais inválidas. Tente novamente."

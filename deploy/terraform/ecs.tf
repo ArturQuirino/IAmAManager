@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "backend" {
     }]
 
     environment = [
-      { name = "NODE_ENV", value = "production" },
+      { name = "APP_ENV", value = "production" },
       { name = "RUN_SEED", value = "false" },
       { name = "POSTGRES_HOST", value = aws_db_instance.main.address },
       { name = "POSTGRES_PORT", value = "5432" },

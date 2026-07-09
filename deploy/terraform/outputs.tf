@@ -38,3 +38,8 @@ output "ecs_frontend_service" {
   description = "ECS frontend service name"
   value       = aws_ecs_service.frontend.name
 }
+
+output "scheduled_jobs" {
+  description = "Names of the EventBridge scheduled jobs"
+  value       = [for schedule in aws_scheduler_schedule.jobs : schedule.name]
+}

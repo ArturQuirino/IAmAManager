@@ -87,3 +87,28 @@ export interface TeamResponse {
 export async function getMyTeam(): Promise<TeamResponse> {
   return apiFetch<TeamResponse>('/players/my-team');
 }
+
+export interface StandingEntry {
+  teamId: string;
+  teamName: string;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  isCurrentUserTeam: boolean;
+}
+
+export interface StandingsResponse {
+  // Null when the team has not been placed in a division yet.
+  divisionLevel: number | null;
+  seasonNumber: number | null;
+  entries: StandingEntry[];
+}
+
+export async function getStandings(): Promise<StandingsResponse> {
+  return apiFetch<StandingsResponse>('/competition/standings');
+}
