@@ -16,7 +16,6 @@ class User(Base):
     )
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String, nullable=False)
-    teamName: Mapped[str] = mapped_column("teamName", String, nullable=False)
     createdAt: Mapped[datetime] = mapped_column(
         "createdAt", DateTime, server_default=func.now(), nullable=False
     )
@@ -28,4 +27,9 @@ class User(Base):
         nullable=False,
     )
 
-    players: Mapped[list["Player"]] = relationship("Player", back_populates="user")
+    team: Mapped["Team | None"] = relationship(
+        "Team", back_populates="user", uselist=False, cascade="all, delete-orphan"
+    )
+
+
+from app.models.team import Team  # noqa: E402

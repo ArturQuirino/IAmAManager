@@ -1,6 +1,6 @@
 """Test data factories.
 
-Small helpers to build persisted `User`/`Player` rows through the real
+Small helpers to build persisted `User`/`Team`/`Player` rows through the real
 services (so the bcrypt hashing / column mapping under test is exercised),
 independent of the production `seed`.
 """
@@ -10,7 +10,9 @@ import uuid
 from sqlalchemy.orm import Session
 
 from app.models.player import Player, PlayerPosition
+from app.models.team import Team
 from app.models.user import User
+from app.services.teams_service import TeamsService
 from app.services.users_service import PlayersService, UsersService
 
 
@@ -19,30 +21,57 @@ def make_user(
     *,
     email: str = "player@example.com",
     password: str = "secret123",
-    team_name: str = "Test FC",
 ) -> User:
-    return UsersService(db).create(
-        email=email, plain_password=password, team_name=team_name
+    return UsersService(db).create(email=email, plain_password=password)
+
+
+def make_team(
+    db: Session,
+    *,
+    user_id: uuid.UUID | None = None,
+    team_name: str = "Test FC",
+    division_id: uuid.UUID | None = None,
+) -> Team:
+    return TeamsService(db).create(
+        team_name=team_name, user_id=user_id, division_id=division_id
     )
+
+
+def make_user_with_team(
+    db: Session,
+    *,
+    email: str = "player@example.com",
+    password: str = "secret123",
+    team_name: str = "Test FC",
+) -> tuple[User, Team]:
+    user = make_user(db, email=email, password=password)
+    team = make_team(db, user_id=user.id, team_name=team_name)
+    return user, team
 
 
 def make_player(
     db: Session,
-    user_id: uuid.UUID,
+    team_id: uuid.UUID,
     *,
     name: str = "John Doe",
-    position: PlayerPosition = PlayerPosition.ST,
-    shirt_number: int = 9,
-    age: int = 25,
-    nationality: str = "Brazil",
-    overall: int = 80,
+    position: PlayerPosition = PlayerPosition.ATT,
+    pace: int = 70,
+    shooting: int = 70,
+    passing: int = 70,
+    dribbling: int = 70,
+    defending: int = 70,
+    physical: int = 70,
+    is_starter: bool = False,
 ) -> Player:
     return PlayersService(db).create(
         name=name,
         position=position,
-        shirt_number=shirt_number,
-        age=age,
-        nationality=nationality,
-        overall=overall,
-        user_id=user_id,
+        pace=pace,
+        shooting=shooting,
+        passing=passing,
+        dribbling=dribbling,
+        defending=defending,
+        physical=physical,
+        team_id=team_id,
+        is_starter=is_starter,
     )

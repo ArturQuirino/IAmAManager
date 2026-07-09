@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.config.settings import get_settings
 from app.database.base import Base
-from app.models import player, user  # noqa: F401
+from app.models import player, team, user  # noqa: F401
 
 config = context.config
 settings = get_settings()

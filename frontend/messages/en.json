@@ -22,12 +22,21 @@
     "playersCount": "{count, plural, one {# player} other {# players}}",
     "logout": "Sign out",
     "columns": {
-      "number": "#",
       "name": "Name",
       "position": "Pos.",
-      "age": "Age",
-      "nationality": "Nationality",
+      "pace": "PAC",
+      "shooting": "SHO",
+      "passing": "PAS",
+      "dribbling": "DRI",
+      "defending": "DEF",
+      "physical": "PHY",
       "overall": "OVR"
+    },
+    "positions": {
+      "GK": "GK",
+      "DEF": "DEF",
+      "MID": "MID",
+      "ATT": "ATT"
     }
   },
   "errors": {

@@ -64,13 +64,18 @@ export async function login(email: string, password: string) {
   });
 }
 
+export type PlayerPosition = 'GK' | 'DEF' | 'MID' | 'ATT';
+
 export interface Player {
   id: string;
   name: string;
-  position: string;
-  shirtNumber: number;
-  age: number;
-  nationality: string;
+  position: PlayerPosition;
+  pace: number;
+  shooting: number;
+  passing: number;
+  dribbling: number;
+  defending: number;
+  physical: number;
   overall: number;
 }
 

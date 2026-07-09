@@ -22,12 +22,21 @@
     "playersCount": "{count, plural, one {# jogador} other {# jogadores}}",
     "logout": "Sair",
     "columns": {
-      "number": "#",
       "name": "Nome",
       "position": "Pos.",
-      "age": "Idade",
-      "nationality": "Nacionalidade",
-      "overall": "OVR"
+      "pace": "RIT",
+      "shooting": "FIN",
+      "passing": "PAS",
+      "dribbling": "DRI",
+      "defending": "DEF",
+      "physical": "FÍS",
+      "overall": "GER"
+    },
+    "positions": {
+      "GK": "GOL",
+      "DEF": "DEF",
+      "MID": "MEI",
+      "ATT": "ATA"
     }
   },
   "errors": {

@@ -1,24 +1,28 @@
 import enum
 import uuid
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.dialects.postgresql import ENUM, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database.base import Base
 
+# The six core attributes, in the order used for the derived overall.
+ATTRIBUTE_NAMES = (
+    "pace",
+    "shooting",
+    "passing",
+    "dribbling",
+    "defending",
+    "physical",
+)
+
 
 class PlayerPosition(str, enum.Enum):
     GK = "GK"
-    CB = "CB"
-    LB = "LB"
-    RB = "RB"
-    CDM = "CDM"
-    CM = "CM"
-    CAM = "CAM"
-    LW = "LW"
-    RW = "RW"
-    ST = "ST"
+    DEF = "DEF"
+    MID = "MID"
+    ATT = "ATT"
 
 
 class Player(Base):
@@ -32,18 +36,33 @@ class Player(Base):
         ENUM(PlayerPosition, name="players_position_enum", create_type=False),
         nullable=False,
     )
-    shirtNumber: Mapped[int] = mapped_column("shirtNumber", Integer, nullable=False)
-    age: Mapped[int] = mapped_column(Integer, nullable=False)
-    nationality: Mapped[str] = mapped_column(String, nullable=False)
-    overall: Mapped[int] = mapped_column(Integer, nullable=False)
-    userId: Mapped[uuid.UUID] = mapped_column(
-        "userId",
+    pace: Mapped[int] = mapped_column(Integer, nullable=False)
+    shooting: Mapped[int] = mapped_column(Integer, nullable=False)
+    passing: Mapped[int] = mapped_column(Integer, nullable=False)
+    dribbling: Mapped[int] = mapped_column(Integer, nullable=False)
+    defending: Mapped[int] = mapped_column(Integer, nullable=False)
+    physical: Mapped[int] = mapped_column(Integer, nullable=False)
+    isStarter: Mapped[bool] = mapped_column(
+        "isStarter", Boolean, nullable=False, default=False
+    )
+    teamId: Mapped[uuid.UUID] = mapped_column(
+        "teamId",
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("teams.id", ondelete="CASCADE"),
         nullable=False,
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="players")
+    team: Mapped["Team"] = relationship("Team", back_populates="players")
+
+    @property
+    def overall(self) -> int:
+        """Average of the six core attributes, rounded to the nearest integer.
+
+        Not stored — derived on read so it can never drift from the attributes.
+        Uses round-half-up for a predictable result on exact .5 averages.
+        """
+        total = sum(getattr(self, name) for name in ATTRIBUTE_NAMES)
+        return int(total / len(ATTRIBUTE_NAMES) + 0.5)
 
 
-from app.models.user import User  # noqa: E402
+from app.models.team import Team  # noqa: E402

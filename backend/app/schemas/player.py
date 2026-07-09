@@ -1,19 +1,21 @@
 import uuid
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 
 class PlayerResponse(BaseModel):
-    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
     name: str
     position: str
-    shirtNumber: int = Field(serialization_alias="shirtNumber")
-    age: int
-    nationality: str
+    pace: int
+    shooting: int
+    passing: int
+    dribbling: int
+    defending: int
+    physical: int
     overall: int
-    userId: uuid.UUID = Field(serialization_alias="userId")
 
 
 class MyTeamResponse(BaseModel):

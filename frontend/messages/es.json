@@ -22,12 +22,21 @@
     "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
     "logout": "Cerrar sesión",
     "columns": {
-      "number": "#",
       "name": "Nombre",
       "position": "Pos.",
-      "age": "Edad",
-      "nationality": "Nacionalidad",
-      "overall": "OVR"
+      "pace": "RIT",
+      "shooting": "TIR",
+      "passing": "PAS",
+      "dribbling": "REG",
+      "defending": "DEF",
+      "physical": "FÍS",
+      "overall": "GEN"
+    },
+    "positions": {
+      "GK": "POR",
+      "DEF": "DEF",
+      "MID": "MED",
+      "ATT": "DEL"
     }
   },
   "errors": {

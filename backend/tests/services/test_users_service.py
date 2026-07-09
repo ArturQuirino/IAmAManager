@@ -9,12 +9,9 @@ from tests.factories import make_user
 def test_create_hashes_password(db_session: Session) -> None:
     service = UsersService(db_session)
 
-    user = service.create(
-        email="a@b.com", plain_password="pw123456", team_name="FC"
-    )
+    user = service.create(email="a@b.com", plain_password="pw123456")
 
     assert user.id is not None
-    assert user.teamName == "FC"
     # The plaintext must never be stored; bcrypt hashes start with "$2".
     assert user.password != "pw123456"
     assert user.password.startswith("$2")
@@ -22,9 +19,7 @@ def test_create_hashes_password(db_session: Session) -> None:
 
 def test_validate_password_matches_and_rejects(db_session: Session) -> None:
     service = UsersService(db_session)
-    user = service.create(
-        email="a@b.com", plain_password="pw123456", team_name="FC"
-    )
+    user = service.create(email="a@b.com", plain_password="pw123456")
 
     assert service.validate_password("pw123456", user.password) is True
     assert service.validate_password("wrong-password", user.password) is False

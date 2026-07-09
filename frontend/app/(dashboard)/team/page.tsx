@@ -88,20 +88,29 @@ export default function TeamPage() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-700/50 bg-surface/50">
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">
-                    {t('columns.number')}
-                  </th>
                   <th className="px-4 py-3 text-left text-slate-400 font-medium">
                     {t('columns.name')}
                   </th>
                   <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">
                     {t('columns.position')}
                   </th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-16">
-                    {t('columns.age')}
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.pace')}
                   </th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium">
-                    {t('columns.nationality')}
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.shooting')}
+                  </th>
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.passing')}
+                  </th>
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.dribbling')}
+                  </th>
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.defending')}
+                  </th>
+                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
+                    {t('columns.physical')}
                   </th>
                   <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">
                     {t('columns.overall')}
@@ -116,19 +125,32 @@ export default function TeamPage() {
                       index % 2 === 0 ? 'bg-transparent' : 'bg-surface/30'
                     } hover:bg-accent/5 transition-colors`}
                   >
-                    <td className="px-4 py-3 font-mono text-accent font-semibold">
-                      {player.shirtNumber}
-                    </td>
                     <td className="px-4 py-3 font-medium text-white">
                       {player.name}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs font-medium">
-                        {player.position}
+                        {t(`positions.${player.position}`)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-slate-300">{player.age}</td>
-                    <td className="px-4 py-3 text-slate-300">{player.nationality}</td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.pace}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.shooting}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.passing}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.dribbling}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.defending}
+                    </td>
+                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
+                      {player.physical}
+                    </td>
                     <td className="px-4 py-3 text-right">
                       <span
                         className={`font-bold ${
