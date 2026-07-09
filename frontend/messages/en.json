@@ -14,7 +14,23 @@
     "passwordLabel": "Password",
     "passwordPlaceholder": "••••••••",
     "submit": "Sign in",
-    "submitting": "Signing in..."
+    "submitting": "Signing in...",
+    "registerPrompt": "Don't have a team yet?",
+    "registerLink": "Create one"
+  },
+  "register": {
+    "title": "Create your club",
+    "subtitle": "Sign up and take charge of a brand-new team",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "At least 8 characters",
+    "teamNameLabel": "Team name",
+    "teamNamePlaceholder": "Your club's name",
+    "submit": "Create team",
+    "submitting": "Creating...",
+    "loginPrompt": "Already have a team?",
+    "loginLink": "Sign in"
   },
   "team": {
     "loadError": "Failed to load your team. Please sign in again.",
@@ -65,7 +81,8 @@
   },
   "errors": {
     "auth": {
-      "invalidCredentials": "Invalid credentials. Please try again."
+      "invalidCredentials": "Invalid credentials. Please try again.",
+      "emailAlreadyExists": "That email is already registered. Try signing in."
     },
     "common": {
       "unknownError": "Something went wrong. Please try again."

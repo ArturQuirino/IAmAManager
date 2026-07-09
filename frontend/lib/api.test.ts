@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { ApiError, apiFetch, clearToken, getToken, setToken } from '@/lib/api';
+import {
+  ApiError,
+  apiFetch,
+  clearToken,
+  getToken,
+  register,
+  setToken,
+} from '@/lib/api';
 
 function okResponse(body: unknown) {
   return vi.fn().mockResolvedValue({
@@ -76,6 +83,23 @@ describe('apiFetch', () => {
     expect(error).toBeInstanceOf(ApiError);
     expect(error.errorCode).toBe('auth.invalidCredentials');
     expect(error.status).toBe(401);
+  });
+
+  it('posts the registration payload to /auth/register', async () => {
+    const fetchMock = okResponse({ access_token: 'jwt-123' });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await register('new@example.com', 'secret123', 'Newcomer FC');
+
+    const [url, options] = fetchMock.mock.calls[0];
+    expect(url).toBe('/api/auth/register');
+    expect(options.method).toBe('POST');
+    expect(JSON.parse(options.body as string)).toEqual({
+      email: 'new@example.com',
+      password: 'secret123',
+      teamName: 'Newcomer FC',
+    });
+    expect(result).toEqual({ access_token: 'jwt-123' });
   });
 
   it('falls back to a generic error code when the body has none', async () => {

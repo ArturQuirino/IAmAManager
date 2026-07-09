@@ -9,4 +9,6 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 3000"]
+# Honor $PORT so the image is portable across hosts that inject it (Cloud Run
+# uses 8080); falls back to 3000 for local/compose and ECS.
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-3000}"]

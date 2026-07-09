@@ -1,9 +1,82 @@
-# Arquitetura alvo — deploy AWS
+# Arquitetura & deploy — I Am a Manager
 
-Este documento registra a **arquitetura alvo** do I Am a Manager na AWS. É a
-referência para o que o Terraform em `deploy/terraform/` provisiona e para
-onde a infraestrutura deve evoluir. É um projeto pessoal, tráfego baixo: o
-objetivo é uma arquitetura **coerente e barata**, não altamente escalável.
+Este documento registra as **duas arquiteturas alvo** do projeto, em dois tiers:
+
+- **Tier portfólio (atual, ≈ $0/mês):** PaaS free tiers que escalam a zero.
+  É a arquitetura recomendada hoje — projeto pessoal, sem monetização, usado
+  como portfólio, com pouquíssimos usuários e que pode ficar ocioso.
+- **Tier scale-up (AWS):** ECS Fargate + ALB + RDS, provisionado por Terraform
+  em `deploy/terraform/`. É o alvo **quando o produto começar a se pagar** —
+  robusto, mas custa ~US$ 45–55/mês rodando 24/7. Não é o ativo hoje.
+
+Os dois tiers rodam o **mesmo código** sem mudanças: o frontend faz proxy
+same-origin de `/api/*` (ver `frontend/next.config.js`) e o backend é um
+container stateless que honra `$PORT`.
+
+---
+
+# Tier portfólio — Cloud Run + Vercel + Neon (≈ $0/mês)
+
+## Visão geral
+
+```
+Usuários ──HTTPS──> Vercel (Next.js) ──/api/* (rewrite)──> Cloud Run (FastAPI, escala a zero)
+                                                                  │
+                                                                  ▼
+                                                          Neon (Postgres serverless)
+                                                                  ▲
+Cloud Scheduler ──cron──> Cloud Run Job (imagem do backend) ──────┘
+```
+
+## Componentes
+
+| Camada | Serviço | Papel |
+|---|---|---|
+| Frontend | **Vercel** (Hobby, grátis) | Next.js nativo; env `BACKEND_INTERNAL_URL` → URL do Cloud Run. O `rewrites()` mantém tudo same-origin (`/api`), sem CORS |
+| Backend | **Google Cloud Run** (escala a zero) | Reusa `backend/Dockerfile.prod`; paga por request (~$0 no volume); cold start ~1–3s |
+| Banco | **Neon** (Postgres serverless, grátis) | Autosuspende quando ocioso e resume ao conectar — ideal para "fica dias sem acesso" |
+| Jobs | **Cloud Scheduler → Cloud Run Job** | Mesma imagem do backend, entrypoint do job (espelha o padrão AWS EventBridge→RunTask) |
+| Migrations | **Cloud Run Job** (`alembic upgrade head`) | Passo separado no deploy (não a cada cold start) |
+| Segredos | **GCP Secret Manager** (ou envs) | `JWT_SECRET`, connection string do Neon |
+
+## Caminho da requisição
+
+1. O browser chama `/api/...` **same-origin** no domínio da Vercel.
+2. O `rewrites()` do Next (`frontend/next.config.js`) faz proxy para
+   `${BACKEND_INTERNAL_URL}/api/...` → serviço do Cloud Run. **Sem CORS**, e o
+   token em `localStorage` continua funcionando.
+3. O Cloud Run (acorda se estiver ocioso) fala com o Neon pela connection string.
+
+## Deploy (alto nível)
+
+Feito por console/`gcloud` + Vercel (opcionalmente Terraform GCP no futuro):
+
+1. **Neon:** criar projeto, pegar a connection string, rodar as migrations
+   (`alembic upgrade head`) uma vez e o seed manualmente se quiser dados.
+2. **Backend (Cloud Run):** build da imagem via `backend/Dockerfile.prod`, push
+   para o Artifact Registry, deploy com envs `APP_ENV=production`,
+   `RUN_SEED=false`, `JWT_SECRET`, `POSTGRES_*`/URL do Neon. Sobrescrever o
+   comando do **serviço** para só `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   (sem alembic no hot path).
+3. **Migrations:** criar um **Cloud Run Job** com comando `alembic upgrade head`
+   e executá-lo a cada deploy que tenha migration nova.
+4. **Frontend (Vercel):** importar o repo (`frontend/`), setar
+   `BACKEND_INTERNAL_URL` = URL do serviço Cloud Run.
+5. **Jobs:** Cloud Scheduler (2 crons, timezone `America/Sao_Paulo`) disparando
+   Cloud Run Jobs que rodam os módulos de job com a URL do Neon.
+
+## Custo
+
+**≈ $0/mês** dentro dos free tiers (Vercel Hobby, Cloud Run scale-to-zero, Neon
+free). Alternativa de jobs 100% grátis e sem GCP extra: `.github/workflows/`
+com `cron` + `workflow_dispatch` rodando `python -m app.jobs.*` contra o Neon.
+
+---
+
+# Tier scale-up — AWS (ECS Fargate + ALB + RDS)
+
+Provisionado por Terraform em `deploy/terraform/`. Alvo para quando o uso
+crescer e justificar custo fixo em troca de robustez.
 
 ## Visão geral
 
@@ -18,12 +91,6 @@ Usuários ──HTTPS──> ALB ──/api/*──> Backend (Fargate, FastAPI)
 EventBridge Scheduler ──cron──> Job (ECS RunTask, imagem do backend)
 ```
 
-Tudo roda numa VPC única com duas AZs. Frontend e backend são serviços
-Fargate independentes atrás de um Application Load Balancer, que faz o
-roteamento por path e termina o TLS. O banco é um RDS PostgreSQL em subnet
-privada. As rotinas periódicas (jogos diários, rotação semanal de jogadores)
-são tarefas Fargate avulsas disparadas pelo EventBridge Scheduler.
-
 ## Componentes
 
 | Componente | Recurso AWS | Arquivo Terraform | Papel |
@@ -35,44 +102,19 @@ são tarefas Fargate avulsas disparadas pelo EventBridge Scheduler.
 | Banco | RDS PostgreSQL | `rds.tf` | Persistência; `publicly_accessible = false` |
 | Imagens | ECR | `ecr.tf` | Registries de frontend e backend |
 | Segredos | Secrets Manager | `secrets.tf` | `JWT_SECRET`, senha do banco |
-| Jobs agendados | EventBridge Scheduler + ECS RunTask | `jobs.tf` | Rotinas periódicas (ver abaixo) |
+| Jobs agendados | EventBridge Scheduler + ECS RunTask | `jobs.tf` | Rotinas periódicas |
 | Observabilidade | CloudWatch Logs | `ecs.tf`, `jobs.tf` | Logs dos containers (retenção 14 dias) |
-
-## Caminho da requisição
-
-1. O usuário acessa o DNS do ALB (ou um domínio apontado para ele).
-2. O ALB encaminha `/api/*` para o target group do backend e todo o resto
-   para o frontend (`aws_lb_listener_rule.api`).
-3. O backend fala com o RDS pela subnet privada (security group `rds` só
-   aceita `5432` vindo do security group `ecs`).
-4. Senha do banco e `JWT_SECRET` chegam ao container via Secrets Manager,
-   nunca em variável de ambiente em texto plano no Terraform.
 
 ## Jobs agendados (Padrão A)
 
-Padrão escolhido: **EventBridge Scheduler → ECS RunTask**, definido em
-`jobs.tf`. Cada job roda a **mesma imagem do backend** com um entrypoint
-diferente, reaproveitando código, acesso ao banco e segredos:
+**EventBridge Scheduler → ECS RunTask** (`jobs.tf`). Cada job roda a mesma
+imagem do backend com um entrypoint diferente, reusando código, acesso ao banco
+e segredos, sem expor endpoint. Crons no timezone de `var.jobs_timezone`.
 
-| Job | Comando | Cron (`jobs_timezone`) |
+| Job | Comando | Cron |
 |---|---|---|
 | `daily-matches` | `python -m app.jobs.run_matches` | todo dia 03:00 |
 | `weekly-player-rotation` | `python -m app.jobs.rotate_players` | segunda 04:00 |
-
-Por que este padrão:
-
-- **Sem duplicação:** reusa a imagem, os services e o acesso ao RDS. O job
-  chama um service (respeita a separação de camadas do `CLAUDE.md` §2.1).
-- **Sem superfície nova:** nenhum endpoint HTTP público para disparar rotina.
-- **Custo por execução:** a task sobe, executa e morre — paga só os segundos.
-- **Resiliência:** o EventBridge Scheduler tem retry nativo (`retry_policy`).
-
-Os crons são avaliados no timezone de `var.jobs_timezone` (padrão
-`America/Sao_Paulo`).
-
-> **Dependência de código:** os módulos `app/jobs/run_matches.py` e
-> `app/jobs/rotate_players.py` ainda precisam ser implementados no backend.
-> Enquanto não existirem, as schedules disparam mas as tasks terminam com erro.
 
 ## Como aplicar
 
@@ -84,34 +126,55 @@ terraform plan
 terraform apply
 ```
 
-O build e push das imagens fica em `deploy/scripts/build-and-push.sh`. As
-migrations do banco rodam automaticamente no boot do container do backend
-(`alembic upgrade head` no `CMD` do `Dockerfile.prod`).
+Build/push das imagens em `deploy/scripts/build-and-push.sh`. As migrations
+rodam no boot do container do backend (`alembic upgrade head` no `CMD`).
 
-## Pendências conhecidas para "produção de verdade"
-
-Itens fora do provisionamento atual, listados para não serem esquecidos:
+## Pendências para "produção de verdade" (AWS)
 
 - **HTTPS/domínio:** o listener 443 só existe se `certificate_arn` for
-  informado. Falta registrar domínio, emitir certificado no ACM e apontar um
-  registro (Route53) para o ALB. Sem TLS, o token no `localStorage` trafega em
-  texto claro.
-- **Migrations no boot:** hoje cada task do backend roda `alembic upgrade head`
-  ao subir. Funciona com uma réplica; se algum dia `desired_count > 1`, duas
-  tasks correm migration ao mesmo tempo (race). Aceitável no volume atual.
-- **Sem NAT gateway (proposital):** as tasks ECS ficam em subnet pública com IP
-  público para alcançar ECR e Secrets Manager pela internet gateway. Não mover
-  para subnet privada sem antes provisionar um NAT (~US$ 32/mês).
+  informado. Falta domínio + certificado ACM + registro (Route53) para o ALB.
+- **Migrations no boot:** cada task roda `alembic upgrade head` ao subir; com
+  `desired_count > 1` haveria corrida. Aceitável no volume atual.
+- **Sem NAT gateway (proposital):** tasks ECS ficam em subnet pública com IP
+  público para alcançar ECR/Secrets pela IGW. Não mover para subnet privada sem
+  antes provisionar um NAT (~US$ 32/mês).
+
+## Custo (24/7, menor porte)
+
+RDS `t4g.micro` (~US$ 12–15) + 2 tasks Fargate 0.25 vCPU/0.5 GB (~US$ 18) +
+ALB (~US$ 16) + jobs (centavos) ≈ **US$ 45–55/mês**.
+
+---
+
+# Notas compartilhadas pelos dois tiers
 
 ## Variável de ambiente do backend: `APP_ENV`
 
 O backend lê `APP_ENV` (`Settings.app_env`) para decidir seed e modo produção
 (`should_seed`, `is_production`). Antes chamava-se `NODE_ENV`, herança de um
-template Node; foi renomeada para `APP_ENV` em todo o stack (`settings.py`,
-`ecs.tf`, `docker-compose*.yml`, `.env.example`). O `NODE_ENV` que permanece é
-apenas o do container do **frontend** (Next.js), onde é legítimo.
+template Node; foi renomeada para `APP_ENV` em todo o stack. O `NODE_ENV` que
+permanece é apenas o do container do **frontend** (Next.js), onde é legítimo.
 
-## Custo aproximado (24/7, menor porte)
+## Rotinas periódicas dependem de lógica de jogo ainda não implementada
 
-RDS `t4g.micro` (~US$ 12–15) + 2 tasks Fargate 0.25 vCPU/0.5 GB (~US$ 18) +
-ALB (~US$ 16) + jobs (centavos) ≈ **US$ 45–55/mês**.
+O **wiring de agendamento** está pronto nos dois tiers (Cloud Scheduler→Cloud
+Run Job; EventBridge→RunTask em `jobs.tf`), mas os módulos `app/jobs/run_matches`
+e `app/jobs/rotate_players` **ainda não existem** — e não podem ser meros
+wrappers, porque a lógica que eles chamariam também não existe:
+
+- **Simulação de partidas:** `docs/match-simulation.md` marca "Not yet
+  implemented". Não há modelo de partida/rodada nem service de simulação.
+- **Rotação semanal da base (youth academy):** `docs/players.md` descreve a
+  regra (4 jogadores/semana, um por posição; não selecionados são perdidos no
+  próximo refresh), mas não há modelo nem service.
+
+Ou seja, antes dos jobs, é preciso implementar essas features (novos modelos +
+migrations Alembic + services + testes). Feito isso, os jobs viram entrypoints
+finos que chamam os services.
+
+## Migração portfólio → scale-up
+
+Quando o uso justificar: aplicar o Terraform em `deploy/terraform/`, migrar os
+dados do Neon para o RDS (`pg_dump`/`pg_restore`), apontar o frontend para o ALB
+(ou manter a Vercel só como CDN do frontend) e desativar os recursos do Cloud
+Run. O código não muda — só a infraestrutura.

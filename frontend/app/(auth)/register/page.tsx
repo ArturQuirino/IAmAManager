@@ -4,15 +4,16 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useTranslations } from 'next-intl';
-import { ApiError, login, setToken, UNKNOWN_ERROR_CODE } from '@/lib/api';
+import { ApiError, register, setToken, UNKNOWN_ERROR_CODE } from '@/lib/api';
 import { useRedirectIfAuthenticated } from '@/hooks/useAuth';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
-  const t = useTranslations('login');
+  const t = useTranslations('register');
   const tErrors = useTranslations('errors');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [teamName, setTeamName] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -24,7 +25,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const { access_token } = await login(email, password);
+      const { access_token } = await register(email, password, teamName);
       setToken(access_token);
       router.replace('/team');
     } catch (err) {
@@ -58,6 +59,27 @@ export default function LoginPage() {
           <div className="space-y-5">
             <div>
               <label
+                htmlFor="teamName"
+                className="block text-sm font-medium text-slate-300 mb-1.5"
+              >
+                {t('teamNameLabel')}
+              </label>
+              <input
+                id="teamName"
+                type="text"
+                value={teamName}
+                onChange={(e) => setTeamName(e.target.value)}
+                required
+                minLength={2}
+                maxLength={50}
+                autoComplete="off"
+                className="w-full px-4 py-2.5 bg-surface border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
+                placeholder={t('teamNamePlaceholder')}
+              />
+            </div>
+
+            <div>
+              <label
                 htmlFor="email"
                 className="block text-sm font-medium text-slate-300 mb-1.5"
               >
@@ -88,7 +110,8 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
+                minLength={8}
+                autoComplete="new-password"
                 className="w-full px-4 py-2.5 bg-surface border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
                 placeholder={t('passwordPlaceholder')}
               />
@@ -111,12 +134,12 @@ export default function LoginPage() {
         </form>
 
         <p className="text-center text-slate-400 text-sm mt-6">
-          {t('registerPrompt')}{' '}
+          {t('loginPrompt')}{' '}
           <Link
-            href="/register"
+            href="/login"
             className="text-accent hover:text-green-400 font-medium transition-colors"
           >
-            {t('registerLink')}
+            {t('loginLink')}
           </Link>
         </p>
       </div>

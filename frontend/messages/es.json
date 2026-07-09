@@ -14,7 +14,23 @@
     "passwordLabel": "Contraseña",
     "passwordPlaceholder": "••••••••",
     "submit": "Iniciar sesión",
-    "submitting": "Iniciando sesión..."
+    "submitting": "Iniciando sesión...",
+    "registerPrompt": "¿Aún no tienes un equipo?",
+    "registerLink": "Crea uno"
+  },
+  "register": {
+    "title": "Crea tu club",
+    "subtitle": "Regístrate y toma el mando de un equipo nuevo",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "tu@ejemplo.com",
+    "passwordLabel": "Contraseña",
+    "passwordPlaceholder": "Al menos 8 caracteres",
+    "teamNameLabel": "Nombre del equipo",
+    "teamNamePlaceholder": "El nombre de tu club",
+    "submit": "Crear equipo",
+    "submitting": "Creando...",
+    "loginPrompt": "¿Ya tienes un equipo?",
+    "loginLink": "Iniciar sesión"
   },
   "team": {
     "loadError": "Error al cargar tu equipo. Inicia sesión nuevamente.",
@@ -65,7 +81,8 @@
   },
   "errors": {
     "auth": {
-      "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo."
+      "invalidCredentials": "Credenciales inválidas. Inténtalo de nuevo.",
+      "emailAlreadyExists": "Ese correo ya está registrado. Intenta iniciar sesión."
     },
     "common": {
       "unknownError": "Ocurrió un error. Inténtalo de nuevo."

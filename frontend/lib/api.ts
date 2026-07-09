@@ -64,6 +64,17 @@ export async function login(email: string, password: string) {
   });
 }
 
+export async function register(
+  email: string,
+  password: string,
+  teamName: string,
+) {
+  return apiFetch<{ access_token: string }>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password, teamName }),
+  });
+}
+
 export type PlayerPosition = 'GK' | 'DEF' | 'MID' | 'ATT';
 
 export interface Player {

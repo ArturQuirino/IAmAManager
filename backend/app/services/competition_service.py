@@ -4,13 +4,24 @@ import uuid
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.models.division import Division
+from app.models.division import TOP_DIVISION_LEVEL, Division
 from app.models.team import Team
 from app.services.player_generator import PlayerGenerator
 
 # Every division holds exactly this many teams (see docs/competition.md).
 DIVISION_SIZE = 10
 INITIAL_SEASON_NUMBER = 1
+# Standing columns copied when a real team takes over a fake team's slot, so a
+# mid-season table stays consistent after the swap.
+STANDING_FIELDS = (
+    "points",
+    "played",
+    "wins",
+    "draws",
+    "losses",
+    "goalsFor",
+    "goalsAgainst",
+)
 # Fake teams are deliberately weak placeholders; a low skill scale keeps their
 # generated squads uncompetitive against real, user-owned teams.
 FAKE_TEAM_SKILL_SCALE = 0.4
@@ -99,6 +110,54 @@ class CompetitionService:
         """Top the division up to DIVISION_SIZE with fresh fake teams."""
         missing = DIVISION_SIZE - self.count_teams_in_division(division.id)
         return [self.create_fake_team(division) for _ in range(max(0, missing))]
+
+    def place_new_team(self, team: Team) -> Division:
+        """Slot a newly registered (user-owned) team into the bottom division.
+
+        If the lowest division still holds a fake placeholder, the team takes
+        its place and inherits its standing (so a mid-season table stays
+        consistent), and the fake — squad included — is discarded. Otherwise a
+        fresh division is opened below the current lowest and topped up with
+        fake teams so the newcomer starts a division of its own.
+        """
+        lowest = self.get_lowest_division()
+        if lowest is not None:
+            fake = self._find_replaceable_fake(lowest.id)
+            if fake is not None:
+                self._replace_fake(fake, team, lowest)
+                return lowest
+        return self._open_division_below(lowest, team)
+
+    def _find_replaceable_fake(self, division_id: uuid.UUID) -> Team | None:
+        """The weakest fake team in the division, or None if it holds none.
+
+        Ordered by points then id so the pick is deterministic: the newcomer
+        replaces the bottom placeholder and inherits its standing.
+        """
+        return self.db.scalar(
+            select(Team)
+            .where(Team.divisionId == division_id, Team.userId.is_(None))
+            .order_by(Team.points.asc(), Team.id.asc())
+            .limit(1)
+        )
+
+    def _replace_fake(self, fake: Team, team: Team, division: Division) -> None:
+        for field in STANDING_FIELDS:
+            setattr(team, field, getattr(fake, field))
+        team.divisionId = division.id
+        self.db.delete(fake)
+        self.db.commit()
+
+    def _open_division_below(
+        self, lowest: Division | None, team: Team
+    ) -> Division:
+        level = lowest.level + 1 if lowest else TOP_DIVISION_LEVEL
+        season = lowest.seasonNumber if lowest else INITIAL_SEASON_NUMBER
+        division = self.create_division(level=level, season_number=season)
+        team.divisionId = division.id
+        self.db.commit()
+        self.fill_division_with_fakes(division)
+        return division
 
     def get_division_standings(self, division_id: uuid.UUID) -> list[Team]:
         """Teams in the division ranked by points, then goal difference.
