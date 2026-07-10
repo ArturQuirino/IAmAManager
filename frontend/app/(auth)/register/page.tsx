@@ -27,7 +27,7 @@ export default function RegisterPage() {
     try {
       const { access_token } = await register(email, password, teamName);
       setToken(access_token);
-      router.replace('/team');
+      router.replace('/home');
     } catch (err) {
       const code =
         err instanceof ApiError && tErrors.has(err.errorCode)

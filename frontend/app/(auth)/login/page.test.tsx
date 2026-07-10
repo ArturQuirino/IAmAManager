@@ -57,7 +57,7 @@ async function fillAndSubmit(
 }
 
 describe('LoginPage', () => {
-  it('logs in and redirects to /team on success', async () => {
+  it('logs in and redirects to /home on success', async () => {
     loginMock.mockResolvedValue({ access_token: 'jwt-123' });
     renderLoginPage();
 
@@ -67,7 +67,7 @@ describe('LoginPage', () => {
       expect(setTokenMock).toHaveBeenCalledWith('jwt-123'),
     );
     expect(loginMock).toHaveBeenCalledWith('user@example.com', 'secret123');
-    expect(replace).toHaveBeenCalledWith('/team');
+    expect(replace).toHaveBeenCalledWith('/home');
   });
 
   it('shows the translated message for a known backend error code', async () => {

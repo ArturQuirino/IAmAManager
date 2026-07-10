@@ -26,7 +26,7 @@ export default function LoginPage() {
     try {
       const { access_token } = await login(email, password);
       setToken(access_token);
-      router.replace('/team');
+      router.replace('/home');
     } catch (err) {
       const code =
         err instanceof ApiError && tErrors.has(err.errorCode)

@@ -59,7 +59,7 @@ async function fillAndSubmit(
 }
 
 describe('RegisterPage', () => {
-  it('registers and redirects to /team on success', async () => {
+  it('registers and redirects to /home on success', async () => {
     registerMock.mockResolvedValue({ access_token: 'jwt-123' });
     renderRegisterPage();
 
@@ -73,7 +73,7 @@ describe('RegisterPage', () => {
       'secret123',
       'Newcomer FC',
     );
-    expect(replace).toHaveBeenCalledWith('/team');
+    expect(replace).toHaveBeenCalledWith('/home');
   });
 
   it('shows the translated message for a known backend error code', async () => {

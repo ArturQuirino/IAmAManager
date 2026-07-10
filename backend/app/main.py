@@ -10,6 +10,7 @@ from app.database.session import SessionLocal
 from app.routers import (
     auth,
     competition,
+    dev,
     health,
     matches,
     players,
@@ -17,6 +18,7 @@ from app.routers import (
     tactics,
     youth,
 )
+from app.scheduler import start_scheduler
 from app.seed.seed import run_seed
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,12 @@ async def lifespan(_: FastAPI):
         run_seed(db)
     finally:
         db.close()
-    yield
+    scheduler_task = start_scheduler()
+    try:
+        yield
+    finally:
+        if scheduler_task is not None:
+            scheduler_task.cancel()
 
 
 app = FastAPI(title="Football Manager API", lifespan=lifespan)
@@ -61,3 +68,8 @@ app.include_router(squad.router, prefix="/api")
 app.include_router(tactics.router, prefix="/api")
 app.include_router(youth.router, prefix="/api")
 app.include_router(matches.router, prefix="/api")
+
+# The manual matchday trigger is a development aid only — never exposed in
+# production, where the daily scheduler is the sole driver of the game world.
+if not settings.is_production:
+    app.include_router(dev.router, prefix="/api")

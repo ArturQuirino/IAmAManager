@@ -53,12 +53,12 @@ describe('useAuth', () => {
 });
 
 describe('useRedirectIfAuthenticated', () => {
-  it('redirects to /team when a token exists', async () => {
+  it('redirects to /home when a token exists', async () => {
     getTokenMock.mockReturnValue('token');
 
     renderHook(() => useRedirectIfAuthenticated());
 
-    await waitFor(() => expect(replace).toHaveBeenCalledWith('/team'));
+    await waitFor(() => expect(replace).toHaveBeenCalledWith('/home'));
   });
 
   it('does nothing when there is no token', async () => {

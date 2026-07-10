@@ -6,6 +6,33 @@
   "language": {
     "label": "Language"
   },
+  "nav": {
+    "home": "Home",
+    "squad": "Squad",
+    "tactics": "Tactics",
+    "matches": "Matches",
+    "league": "League",
+    "youth": "Youth",
+    "logout": "Sign out"
+  },
+  "home": {
+    "title": "Home",
+    "loadError": "Failed to load your dashboard. Please try again.",
+    "nextMatch": "Next match",
+    "noNextMatch": "No upcoming matches — the season is over.",
+    "round": "Round {round}",
+    "home": "Home",
+    "away": "Away",
+    "leaguePosition": "League position",
+    "positionValue": "{position} of {total}",
+    "noPosition": "Your team is not in a division yet.",
+    "divisionSeason": "Division {level} · Season {season}",
+    "recentResults": "Recent results",
+    "noResults": "No matches played yet.",
+    "win": "W",
+    "draw": "D",
+    "loss": "L"
+  },
   "login": {
     "title": "Football Manager",
     "subtitle": "Sign in to manage your team",

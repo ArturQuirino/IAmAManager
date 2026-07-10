@@ -6,6 +6,33 @@
   "language": {
     "label": "Idioma"
   },
+  "nav": {
+    "home": "Inicio",
+    "squad": "Plantilla",
+    "tactics": "Táctica",
+    "matches": "Partidos",
+    "league": "Liga",
+    "youth": "Cantera",
+    "logout": "Cerrar sesión"
+  },
+  "home": {
+    "title": "Inicio",
+    "loadError": "No se pudo cargar el panel. Inténtalo de nuevo.",
+    "nextMatch": "Próximo partido",
+    "noNextMatch": "No hay próximos partidos — la temporada terminó.",
+    "round": "Jornada {round}",
+    "home": "Local",
+    "away": "Visitante",
+    "leaguePosition": "Posición en la liga",
+    "positionValue": "{position} de {total}",
+    "noPosition": "Tu equipo aún no está en una división.",
+    "divisionSeason": "División {level} · Temporada {season}",
+    "recentResults": "Resultados recientes",
+    "noResults": "Aún no se ha jugado ningún partido.",
+    "win": "G",
+    "draw": "E",
+    "loss": "P"
+  },
   "login": {
     "title": "Football Manager",
     "subtitle": "Inicia sesión para gestionar tu equipo",

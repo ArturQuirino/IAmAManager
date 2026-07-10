@@ -27,7 +27,7 @@ export function useRedirectIfAuthenticated() {
   useEffect(() => {
     const token = getToken();
     if (token) {
-      router.replace('/team');
+      router.replace('/home');
     }
   }, [router]);
 }

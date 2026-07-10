@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     run_seed: str = "false"
     cors_origins: str = "http://localhost:3000"
 
+    # Daily matchday job: whether the in-process scheduler runs, and the local
+    # wall-clock time it fires each day (see docs/competition.md — 18:00).
+    scheduler_enabled: str = "false"
+    matchday_hour: int = 18
+    matchday_minute: int = 0
+
     @property
     def database_url(self) -> str:
         return (
@@ -56,6 +62,10 @@ class Settings(BaseSettings):
     @property
     def should_seed(self) -> bool:
         return self.run_seed.lower() == "true" or self.app_env == "development"
+
+    @property
+    def is_scheduler_enabled(self) -> bool:
+        return self.scheduler_enabled.lower() == "true"
 
     @property
     def is_production(self) -> bool:

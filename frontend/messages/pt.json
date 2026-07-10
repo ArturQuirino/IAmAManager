@@ -6,6 +6,33 @@
   "language": {
     "label": "Idioma"
   },
+  "nav": {
+    "home": "Início",
+    "squad": "Elenco",
+    "tactics": "Tática",
+    "matches": "Partidas",
+    "league": "Liga",
+    "youth": "Base",
+    "logout": "Sair"
+  },
+  "home": {
+    "title": "Início",
+    "loadError": "Erro ao carregar o painel. Tente novamente.",
+    "nextMatch": "Próxima partida",
+    "noNextMatch": "Sem partidas futuras — a temporada acabou.",
+    "round": "Rodada {round}",
+    "home": "Casa",
+    "away": "Fora",
+    "leaguePosition": "Posição na liga",
+    "positionValue": "{position} de {total}",
+    "noPosition": "Seu time ainda não está em uma divisão.",
+    "divisionSeason": "Divisão {level} · Temporada {season}",
+    "recentResults": "Resultados recentes",
+    "noResults": "Nenhuma partida jogada ainda.",
+    "win": "V",
+    "draw": "E",
+    "loss": "D"
+  },
   "login": {
     "title": "Football Manager",
     "subtitle": "Entre para gerenciar seu time",
