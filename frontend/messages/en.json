@@ -114,10 +114,7 @@
     "release": "Release",
     "releaseConfirm": "Release {name} from the squad?",
     "confirmRelease": "Release",
-    "cancel": "Cancel",
-    "detailTitle": "Player details",
-    "close": "Close",
-    "overall": "Overall"
+    "cancel": "Cancel"
   },
   "youth": {
     "title": "Youth academy",

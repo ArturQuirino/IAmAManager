@@ -114,10 +114,7 @@
     "release": "Liberar",
     "releaseConfirm": "¿Liberar a {name} de la plantilla?",
     "confirmRelease": "Liberar",
-    "cancel": "Cancelar",
-    "detailTitle": "Detalles del jugador",
-    "close": "Cerrar",
-    "overall": "General"
+    "cancel": "Cancelar"
   },
   "youth": {
     "title": "Cantera",

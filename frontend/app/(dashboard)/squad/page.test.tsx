@@ -73,16 +73,21 @@ describe('SquadPage', () => {
     expect(screen.getByText('Falcao')).toBeInTheDocument();
   });
 
-  it('opens the player detail with the six attributes', async () => {
+  it('shows the six attributes and overall inline in the row', async () => {
     getSquadMock.mockResolvedValue(squad([player()]));
     renderSquadPage();
 
-    const user = userEvent.setup();
-    await user.click(await screen.findByText('Zico'));
-
-    expect(screen.getByText('Detalhes do jogador')).toBeInTheDocument();
-    // Passing attribute value is shown in the detail panel.
-    expect(screen.getByText('90')).toBeInTheDocument();
+    const row = (await screen.findByText('Zico')).closest('tr');
+    expect(row).not.toBeNull();
+    const cells = within(row as HTMLElement);
+    // pace, shooting, passing, dribbling, defending, physical, overall.
+    expect(cells.getByText('70')).toBeInTheDocument();
+    expect(cells.getByText('80')).toBeInTheDocument();
+    expect(cells.getByText('90')).toBeInTheDocument();
+    expect(cells.getByText('85')).toBeInTheDocument();
+    expect(cells.getByText('40')).toBeInTheDocument();
+    expect(cells.getByText('65')).toBeInTheDocument();
+    expect(cells.getByText('72')).toBeInTheDocument();
   });
 
   it('removes a player after confirmation', async () => {

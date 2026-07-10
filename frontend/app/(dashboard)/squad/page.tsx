@@ -31,7 +31,6 @@ export default function SquadPage() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selected, setSelected] = useState<Player | null>(null);
   const [pendingRemoval, setPendingRemoval] = useState<Player | null>(null);
   const [actionError, setActionError] = useState('');
   const [removing, setRemoving] = useState(false);
@@ -126,6 +125,14 @@ export default function SquadPage() {
                   <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">
                     {tTeam('columns.position')}
                   </th>
+                  {ATTRIBUTES.map((key) => (
+                    <th
+                      key={key}
+                      className="px-3 py-3 text-right text-slate-400 font-medium w-16"
+                    >
+                      {tTeam(`columns.${key}`)}
+                    </th>
+                  ))}
                   <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">
                     {tTeam('columns.overall')}
                   </th>
@@ -141,18 +148,21 @@ export default function SquadPage() {
                     } hover:bg-accent/5 transition-colors`}
                   >
                     <td className="px-4 py-3 font-medium text-white">
-                      <button
-                        onClick={() => setSelected(player)}
-                        className="hover:text-accent transition-colors"
-                      >
-                        {player.name}
-                      </button>
+                      {player.name}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-block px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs font-medium">
                         {tTeam(`positions.${player.position}`)}
                       </span>
                     </td>
+                    {ATTRIBUTES.map((key) => (
+                      <td
+                        key={key}
+                        className="px-3 py-3 text-right text-slate-300 font-mono"
+                      >
+                        {player[key]}
+                      </td>
+                    ))}
                     <td className="px-4 py-3 text-right font-bold text-white font-mono">
                       {player.overall}
                     </td>
@@ -174,20 +184,6 @@ export default function SquadPage() {
           </div>
         </div>
       </main>
-
-      {selected && (
-        <PlayerDetail
-          player={selected}
-          onClose={() => setSelected(null)}
-          labels={{
-            title: t('detailTitle'),
-            close: t('close'),
-            overall: t('overall'),
-            attribute: (key) => tTeam(`columns.${key}`),
-            position: tTeam(`positions.${selected.position}`),
-          }}
-        />
-      )}
 
       {pendingRemoval && (
         <div
@@ -221,65 +217,6 @@ export default function SquadPage() {
           </div>
         </div>
       )}
-    </div>
-  );
-}
-
-interface DetailLabels {
-  title: string;
-  close: string;
-  overall: string;
-  attribute: (key: (typeof ATTRIBUTES)[number]) => string;
-  position: string;
-}
-
-function PlayerDetail({
-  player,
-  onClose,
-  labels,
-}: {
-  player: Player;
-  onClose: () => void;
-  labels: DetailLabels;
-}) {
-  return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center px-4 z-20">
-      <div className="bg-card border border-slate-700 rounded-xl p-6 max-w-md w-full shadow-2xl">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <p className="text-xs uppercase tracking-wide text-slate-500">
-              {labels.title}
-            </p>
-            <h2 className="text-xl font-bold text-white">{player.name}</h2>
-            <span className="inline-block mt-1 px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs font-medium">
-              {labels.position}
-            </span>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-slate-500">{labels.overall}</p>
-            <p className="text-3xl font-bold text-accent">{player.overall}</p>
-          </div>
-        </div>
-        <dl className="grid grid-cols-2 gap-3">
-          {ATTRIBUTES.map((key) => (
-            <div
-              key={key}
-              className="flex items-center justify-between bg-surface/50 rounded-lg px-3 py-2"
-            >
-              <dt className="text-slate-400 text-sm">{labels.attribute(key)}</dt>
-              <dd className="text-white font-mono font-medium">
-                {player[key]}
-              </dd>
-            </div>
-          ))}
-        </dl>
-        <button
-          onClick={onClose}
-          className="mt-6 w-full py-2 text-sm font-medium text-slate-300 border border-slate-600 rounded-lg hover:text-white transition-colors"
-        >
-          {labels.close}
-        </button>
-      </div>
     </div>
   );
 }

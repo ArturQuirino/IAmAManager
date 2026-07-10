@@ -114,10 +114,7 @@
     "release": "Dispensar",
     "releaseConfirm": "Dispensar {name} do elenco?",
     "confirmRelease": "Dispensar",
-    "cancel": "Cancelar",
-    "detailTitle": "Detalhes do jogador",
-    "close": "Fechar",
-    "overall": "Geral"
+    "cancel": "Cancelar"
   },
   "youth": {
     "title": "Base",
