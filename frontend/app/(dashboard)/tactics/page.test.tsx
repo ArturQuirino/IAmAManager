@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -79,6 +79,61 @@ function renderTacticsPage() {
   );
 }
 
+// jsdom has no DataTransfer; a stub carrying the dragged id is enough.
+function dataTransfer(id: string) {
+  return {
+    setData: vi.fn(),
+    getData: () => id,
+    effectAllowed: '',
+    dropEffect: '',
+  };
+}
+
+// The drop handler normalizes clientX/Y against the pitch rect; jsdom
+// reports a zero-sized rect, so pin it to a 100x100 box.
+function mockPitchRect(pitchEl: HTMLElement) {
+  pitchEl.getBoundingClientRect = () =>
+    ({
+      left: 0,
+      top: 0,
+      width: 100,
+      height: 100,
+      right: 100,
+      bottom: 100,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    }) as DOMRect;
+}
+
+async function loadPage() {
+  renderTacticsPage();
+  const pitch = await screen.findByRole('region', { name: 'Campo' });
+  mockPitchRect(pitch);
+  const bench = screen.getByRole('region', { name: 'Banco de reservas' });
+  return { pitch, bench };
+}
+
+function dragAndDrop(
+  chip: HTMLElement,
+  target: HTMLElement,
+  playerId: string,
+  at: { x: number; y: number } = { x: 0, y: 0 },
+) {
+  const transfer = dataTransfer(playerId);
+  fireEvent.dragStart(chip, { dataTransfer: transfer });
+  // jsdom has no DragEvent, and the plain-Event fallback drops clientX/Y;
+  // a MouseEvent named "drop" carries the coordinates and reaches React.
+  const drop = new MouseEvent('drop', {
+    bubbles: true,
+    cancelable: true,
+    clientX: at.x,
+    clientY: at.y,
+  });
+  Object.defineProperty(drop, 'dataTransfer', { value: transfer });
+  fireEvent(target, drop);
+}
+
 beforeEach(() => {
   replace.mockClear();
   getTacticsMock.mockReset();
@@ -86,30 +141,25 @@ beforeEach(() => {
 });
 
 describe('TacticsPage', () => {
-  it('lists the whole squad and shows the derived formation', async () => {
+  it('arranges the starters on the pitch and the rest on the bench', async () => {
     getTacticsMock.mockResolvedValue(tactics());
-    renderTacticsPage();
+    const { pitch, bench } = await loadPage();
 
-    expect(await screen.findByText('Keeper')).toBeInTheDocument();
-    expect(screen.getByText('Backup Keeper')).toBeInTheDocument();
-    // Both the initial starters and the toggled selection derive "4-3-3".
+    expect(within(pitch).getByLabelText('Keeper')).toBeInTheDocument();
+    expect(within(pitch).getByLabelText('Defender 0')).toBeInTheDocument();
+    expect(within(bench).getByLabelText('Backup Keeper')).toBeInTheDocument();
+    expect(within(bench).getByLabelText('Reserve Mid')).toBeInTheDocument();
     expect(screen.getByText('4-3-3')).toBeInTheDocument();
-    // Starters come pre-checked.
-    expect(screen.getByRole('checkbox', { name: 'Keeper' })).toBeChecked();
-    expect(
-      screen.getByRole('checkbox', { name: 'Backup Keeper' }),
-    ).not.toBeChecked();
+    expect(screen.getByText('11/11')).toBeInTheDocument();
   });
 
-  it('saves the selected eleven', async () => {
+  it('saves the placed eleven', async () => {
     getTacticsMock.mockResolvedValue(tactics());
     setStartingXiMock.mockResolvedValue(tactics());
-    renderTacticsPage();
+    await loadPage();
 
     const user = userEvent.setup();
-    const save = await screen.findByRole('button', {
-      name: 'Salvar escalação',
-    });
+    const save = screen.getByRole('button', { name: 'Salvar escalação' });
     expect(save).toBeEnabled();
     await user.click(save);
 
@@ -118,33 +168,57 @@ describe('TacticsPage', () => {
     expect(await screen.findByText('Escalação salva.')).toBeInTheDocument();
   });
 
-  it('disables saving while the selection is not exactly eleven', async () => {
+  it('benches a player dragged off the pitch and blocks saving', async () => {
     getTacticsMock.mockResolvedValue(tactics());
-    renderTacticsPage();
+    const { pitch, bench } = await loadPage();
 
-    const user = userEvent.setup();
-    // Drop a starter: the selection falls to ten and saving is blocked.
-    await user.click(await screen.findByRole('checkbox', { name: 'Keeper' }));
+    dragAndDrop(within(pitch).getByLabelText('Attacker 0'), bench, 'att0');
 
+    expect(within(bench).getByLabelText('Attacker 0')).toBeInTheDocument();
+    expect(screen.getByText('10/11')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Salvar escalação' }),
     ).toBeDisabled();
   });
 
-  it('disables saving when there is not exactly one goalkeeper', async () => {
+  it('replaces the occupant when a bench player is dropped on them', async () => {
     getTacticsMock.mockResolvedValue(tactics());
-    renderTacticsPage();
+    const { pitch, bench } = await loadPage();
 
-    const user = userEvent.setup();
-    // Swap an outfielder for the backup keeper: 11 players but two keepers.
-    await user.click(
-      await screen.findByRole('checkbox', { name: 'Attacker 0' }),
+    // Midfield slot 0 (Midfielder 0) is centered at x=10%, y=44%.
+    dragAndDrop(
+      within(bench).getByLabelText('Reserve Mid'),
+      pitch,
+      'bench-mid',
+      { x: 10, y: 44 },
     );
-    await user.click(screen.getByRole('checkbox', { name: 'Backup Keeper' }));
 
+    expect(within(pitch).getByLabelText('Reserve Mid')).toBeInTheDocument();
+    expect(within(bench).getByLabelText('Midfielder 0')).toBeInTheDocument();
+    expect(screen.getByText('11/11')).toBeInTheDocument();
     expect(
       screen.getByRole('button', { name: 'Salvar escalação' }),
-    ).toBeDisabled();
+    ).toBeEnabled();
+  });
+
+  it('rejects a goalkeeper dropped outside the goal', async () => {
+    getTacticsMock.mockResolvedValue(tactics());
+    const { pitch, bench } = await loadPage();
+
+    dragAndDrop(
+      within(bench).getByLabelText('Backup Keeper'),
+      pitch,
+      'bench-gk',
+      { x: 50, y: 44 },
+    );
+
+    expect(
+      screen.getByText(
+        'Apenas o goleiro pode ocupar o gol, e o goleiro não pode jogar na linha.',
+      ),
+    ).toBeInTheDocument();
+    expect(within(bench).getByLabelText('Backup Keeper')).toBeInTheDocument();
+    expect(screen.getByText('11/11')).toBeInTheDocument();
   });
 
   it('shows the translated error when the server rejects the lineup', async () => {
@@ -152,12 +226,10 @@ describe('TacticsPage', () => {
     setStartingXiMock.mockRejectedValue(
       new ApiError('tactics.needExactlyOneGk', 422),
     );
-    renderTacticsPage();
+    await loadPage();
 
     const user = userEvent.setup();
-    await user.click(
-      await screen.findByRole('button', { name: 'Salvar escalação' }),
-    );
+    await user.click(screen.getByRole('button', { name: 'Salvar escalação' }));
 
     expect(
       await screen.findByText(
