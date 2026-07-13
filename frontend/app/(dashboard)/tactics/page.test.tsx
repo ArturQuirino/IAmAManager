@@ -1,5 +1,4 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { NextIntlClientProvider } from 'next-intl';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import messages from '@/messages/pt.json';
@@ -138,6 +137,9 @@ beforeEach(() => {
   replace.mockClear();
   getTacticsMock.mockReset();
   setStartingXiMock.mockReset();
+  // Auto-save fires on any valid change; default to a resolving stub so tests
+  // that only assert on the pitch don't trip on an unhandled rejection.
+  setStartingXiMock.mockResolvedValue(tactics());
 });
 
 describe('TacticsPage', () => {
@@ -153,22 +155,28 @@ describe('TacticsPage', () => {
     expect(screen.getByText('11/11')).toBeInTheDocument();
   });
 
-  it('saves the placed eleven', async () => {
+  it('auto-saves the eleven when the lineup changes, without a save button', async () => {
     getTacticsMock.mockResolvedValue(tactics());
     setStartingXiMock.mockResolvedValue(tactics());
-    await loadPage();
+    const { pitch, bench } = await loadPage();
 
-    const user = userEvent.setup();
-    const save = screen.getByRole('button', { name: 'Salvar escalação' });
-    expect(save).toBeEnabled();
-    await user.click(save);
+    expect(
+      screen.queryByRole('button', { name: 'Salvar escalação' }),
+    ).not.toBeInTheDocument();
+    // A valid swap keeps eleven on the pitch and should persist on its own.
+    dragAndDrop(
+      within(bench).getByLabelText('Reserve Mid'),
+      pitch,
+      'bench-mid',
+      { x: 34, y: 44 },
+    );
 
     await waitFor(() => expect(setStartingXiMock).toHaveBeenCalledTimes(1));
     expect(setStartingXiMock.mock.calls[0][0]).toHaveLength(11);
     expect(await screen.findByText('Escalação salva.')).toBeInTheDocument();
   });
 
-  it('benches a player dragged off the pitch and blocks saving', async () => {
+  it('does not auto-save while the lineup is incomplete', async () => {
     getTacticsMock.mockResolvedValue(tactics());
     const { pitch, bench } = await loadPage();
 
@@ -176,9 +184,7 @@ describe('TacticsPage', () => {
 
     expect(within(bench).getByLabelText('Attacker 0')).toBeInTheDocument();
     expect(screen.getByText('10/11')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Salvar escalação' }),
-    ).toBeDisabled();
+    await waitFor(() => expect(setStartingXiMock).not.toHaveBeenCalled());
   });
 
   it('replaces the occupant when a bench player is dropped on them', async () => {
@@ -196,9 +202,6 @@ describe('TacticsPage', () => {
     expect(within(pitch).getByLabelText('Reserve Mid')).toBeInTheDocument();
     expect(within(bench).getByLabelText('Midfielder 0')).toBeInTheDocument();
     expect(screen.getByText('11/11')).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: 'Salvar escalação' }),
-    ).toBeEnabled();
   });
 
   it('rejects a goalkeeper dropped outside the goal', async () => {
@@ -226,10 +229,14 @@ describe('TacticsPage', () => {
     setStartingXiMock.mockRejectedValue(
       new ApiError('tactics.needExactlyOneGk', 422),
     );
-    await loadPage();
+    const { pitch, bench } = await loadPage();
 
-    const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: 'Salvar escalação' }));
+    dragAndDrop(
+      within(bench).getByLabelText('Reserve Mid'),
+      pitch,
+      'bench-mid',
+      { x: 34, y: 44 },
+    );
 
     expect(
       await screen.findByText(

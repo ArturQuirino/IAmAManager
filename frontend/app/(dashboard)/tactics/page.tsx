@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import {
@@ -27,6 +27,10 @@ import { useAuth } from '@/hooks/useAuth';
 import Pitch from '@/components/tactics/Pitch';
 import BenchList from '@/components/tactics/BenchList';
 
+// Delay between the last pitch change and the auto-save request, so a burst of
+// drags results in a single write rather than one per intermediate state.
+const AUTOSAVE_DEBOUNCE_MS = 500;
+
 export default function TacticsPage() {
   const router = useRouter();
   const t = useTranslations('tactics');
@@ -39,9 +43,15 @@ export default function TacticsPage() {
   const [isInvalidDrop, setIsInvalidDrop] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [actionError, setActionError] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
+  const [saveState, setSaveState] = useState<'idle' | 'saving' | 'saved'>(
+    'idle',
+  );
+  // The first pitch state after load is the already-persisted XI, so it must
+  // not trigger an auto-save; this flips once that initial state has settled.
+  const hasLoaded = useRef(false);
+  // Identifies the latest in-flight save so stale responses are ignored.
+  const saveSeq = useRef(0);
 
   useEffect(() => {
     if (isAuthenticated === false) return;
@@ -69,12 +79,44 @@ export default function TacticsPage() {
   const formation = deriveFormation(pitch);
   const isDraggingFromPitch =
     draggingId !== null && findLineOf(pitch, draggingId) !== null;
+  const actionError = errorCode
+    ? tErrors(tErrors.has(errorCode) ? errorCode : UNKNOWN_ERROR_CODE)
+    : '';
+
+  // Auto-save: whenever the pitch reaches a valid XI, persist it after a short
+  // debounce so rapid drags collapse into one request. The response is not
+  // applied back to the pitch (the backend stores only who starts, not their
+  // on-pitch arrangement), which keeps the user's manual layout intact.
+  useEffect(() => {
+    if (loading) return;
+    if (!hasLoaded.current) {
+      hasLoaded.current = true;
+      return;
+    }
+    if (!isValidXi(pitch)) return;
+
+    const ids = placedIds(pitch);
+    const seq = (saveSeq.current += 1);
+    setErrorCode(null);
+    setSaveState('saving');
+    const timer = setTimeout(() => {
+      setStartingXi(ids)
+        .then(() => {
+          if (seq === saveSeq.current) setSaveState('saved');
+        })
+        .catch((err) => {
+          if (seq !== saveSeq.current) return;
+          setErrorCode(err instanceof ApiError ? err.errorCode : UNKNOWN_ERROR_CODE);
+          setSaveState('idle');
+        });
+    }, AUTOSAVE_DEBOUNCE_MS);
+    return () => clearTimeout(timer);
+  }, [pitch, loading]);
 
   function handleDragStart(playerId: string) {
     setDraggingId(playerId);
     setIsInvalidDrop(false);
-    setSaved(false);
-    setActionError('');
+    setErrorCode(null);
   }
 
   function handleDropPlayer(playerId: string, target: DropTarget | null) {
@@ -91,26 +133,6 @@ export default function TacticsPage() {
     setDraggingId(null);
     setIsInvalidDrop(false);
     setPitch((prev) => removeFromPitch(prev, playerId));
-  }
-
-  async function handleSave() {
-    setActionError('');
-    setSaved(false);
-    setSaving(true);
-    try {
-      const data = await setStartingXi(placedIds(pitch));
-      setSquad([...data.starters, ...data.bench]);
-      setPitch(autoArrange(data.starters));
-      setSaved(true);
-    } catch (err) {
-      const code =
-        err instanceof ApiError && tErrors.has(err.errorCode)
-          ? err.errorCode
-          : UNKNOWN_ERROR_CODE;
-      setActionError(tErrors(code));
-    } finally {
-      setSaving(false);
-    }
   }
 
   if (isAuthenticated === null || loading) {
@@ -193,24 +215,24 @@ export default function TacticsPage() {
               {formation ?? t('formationEmpty')}
             </p>
           </div>
-          <div className="ml-auto text-right">
-            <button
-              onClick={handleSave}
-              disabled={!isValidXi(pitch) || saving}
-              className="px-5 py-2 text-sm font-semibold text-surface bg-accent hover:bg-green-500 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-            >
-              {saving ? t('saving') : t('save')}
-            </button>
+          <div className="ml-auto text-right min-h-[1.5rem] flex items-center justify-end">
+            {saveState === 'saving' && (
+              <span className="flex items-center gap-2 text-sm text-slate-400">
+                <span className="w-3.5 h-3.5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                {t('saving')}
+              </span>
+            )}
+            {saveState === 'saved' && (
+              <span className="flex items-center gap-1.5 text-sm text-accent">
+                <span aria-hidden="true">✓</span>
+                {t('saved')}
+              </span>
+            )}
           </div>
         </div>
 
         <p className="mb-2 text-sm text-slate-400">{t('requirements')}</p>
         <p className="mb-4 text-sm text-slate-500">{t('dragHint')}</p>
-        {saved && (
-          <p className="mb-4 text-accent text-sm bg-accent/10 border border-accent/20 rounded-lg px-4 py-2.5">
-            {t('saved')}
-          </p>
-        )}
         {actionError && (
           <p className="mb-4 text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-4 py-2.5">
             {actionError}

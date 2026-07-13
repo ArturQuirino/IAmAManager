@@ -143,7 +143,6 @@
     "dragHint": "Arraste os jogadores para o campo. Solte sobre uma posição ocupada para substituir o jogador, ou arraste um jogador de volta ao banco para removê-lo.",
     "invalidDrop": "Apenas o goleiro pode ocupar o gol, e o goleiro não pode jogar na linha.",
     "requirements": "Escale exatamente 11 jogadores com exatamente um goleiro.",
-    "save": "Salvar escalação",
     "saving": "Salvando...",
     "saved": "Escalação salva."
   },
