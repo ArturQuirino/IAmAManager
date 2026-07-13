@@ -66,7 +66,7 @@ export default function Pitch({
       aria-label={t('pitch')}
       onDrop={handleDrop}
       onDragOver={handleDragOver}
-      className="relative w-full aspect-[4/5] rounded-xl border-2 border-white/30 bg-gradient-to-b from-green-700 to-green-900 shadow-2xl overflow-hidden"
+      className="relative w-full aspect-[4/5] rounded-xl border-2 border-white/30 bg-gradient-to-b from-green-700 to-green-900 shadow-2xl"
     >
       {/* Band separators */}
       {LINE_BANDS.filter(({ from }) => from > 0).map(({ line, from }) => (
