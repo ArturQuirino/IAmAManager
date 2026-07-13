@@ -140,7 +140,6 @@
     "bench": "Bench",
     "benchEmpty": "Everyone is on the pitch.",
     "benchDropHint": "Drop here to send the player to the bench.",
-    "emptySlot": "Empty slot",
     "dragHint": "Drag players onto the pitch. Drop onto an occupied spot to replace that player, or drag a player back to the bench to remove them.",
     "invalidDrop": "Only the goalkeeper can occupy the goal, and the goalkeeper cannot play outfield.",
     "requirements": "Field exactly 11 players with exactly one goalkeeper.",

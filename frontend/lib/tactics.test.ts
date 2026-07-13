@@ -5,9 +5,10 @@ import {
   autoArrange,
   createEmptyPitch,
   deriveFormation,
-  findSlot,
+  findLineOf,
   isValidXi,
   placedIds,
+  playerX,
   removeFromPitch,
   resolveDrop,
   type PitchState,
@@ -38,25 +39,42 @@ function startingXi(): Player[] {
   ];
 }
 
-describe('autoArrange', () => {
-  it('places the GK in goal and outfielders on their lines, left to right', () => {
-    const pitch = autoArrange(startingXi());
-    expect(pitch.goal).toEqual(['gk']);
-    expect(pitch.def).toEqual(['d0', 'd1', 'd2', 'd3', null]);
-    expect(pitch.mid).toEqual(['m0', 'm1', 'm2', null, null]);
-    expect(pitch.att).toEqual(['a0', 'a1', 'a2', null, null]);
+// Vertical center of each band (see LINE_BANDS): att .15, mid .44, def .71.
+const Y = { att: 0.15, mid: 0.44, def: 0.71, goal: 0.95 };
+
+describe('playerX', () => {
+  it('centers a single player and straddles the center for two', () => {
+    expect(playerX(0, 1)).toBeCloseTo(0.5);
+    expect(playerX(0, 2)).toBeCloseTo(0.42);
+    expect(playerX(1, 2)).toBeCloseTo(0.58);
   });
 
-  it('spills overflow beyond five onto the adjacent line', () => {
+  it('spreads three symmetrically around the center', () => {
+    expect(playerX(0, 3)).toBeCloseTo(0.34);
+    expect(playerX(1, 3)).toBeCloseTo(0.5);
+    expect(playerX(2, 3)).toBeCloseTo(0.66);
+  });
+});
+
+describe('autoArrange', () => {
+  it('places the GK in goal and outfielders on their lines, densely', () => {
+    const pitch = autoArrange(startingXi());
+    expect(pitch.goal).toEqual(['gk']);
+    expect(pitch.def).toEqual(['d0', 'd1', 'd2', 'd3']);
+    expect(pitch.mid).toEqual(['m0', 'm1', 'm2']);
+    expect(pitch.att).toEqual(['a0', 'a1', 'a2']);
+  });
+
+  it('spills a seventh defender onto the adjacent line', () => {
     const starters = [
       player('gk', 'GK'),
       ...Array.from({ length: 7 }, (_, i) => player(`d${i}`, 'DEF')),
       ...Array.from({ length: 3 }, (_, i) => player(`a${i}`, 'ATT')),
     ];
     const pitch = autoArrange(starters);
-    expect(pitch.def).toEqual(['d0', 'd1', 'd2', 'd3', 'd4']);
-    expect(pitch.mid).toEqual(['d5', 'd6', null, null, null]);
-    expect(pitch.att).toEqual(['a0', 'a1', 'a2', null, null]);
+    expect(pitch.def).toEqual(['d0', 'd1', 'd2', 'd3', 'd4', 'd5']);
+    expect(pitch.mid).toEqual(['d6']);
+    expect(pitch.att).toEqual(['a0', 'a1', 'a2']);
   });
 
   it('leaves extra goalkeepers off the pitch', () => {
@@ -67,118 +85,130 @@ describe('autoArrange', () => {
 });
 
 describe('resolveDrop', () => {
-  function arrangedPitch(): PitchState {
-    return autoArrange(startingXi());
-  }
+  const base = { pitch: createEmptyPitch(), draggingId: null };
 
   it('picks the line from the vertical band under the drop', () => {
-    const pitch = createEmptyPitch();
-    const base = { x: 0.5, playerPosition: 'MID' as const, pitch };
-    expect(resolveDrop({ ...base, y: 0.1 })?.line).toBe('att');
-    expect(resolveDrop({ ...base, y: 0.45 })?.line).toBe('mid');
-    expect(resolveDrop({ ...base, y: 0.7 })?.line).toBe('def');
+    const args = { ...base, x: 0.5, playerPosition: 'MID' as const };
+    expect(resolveDrop({ ...args, y: Y.att })?.line).toBe('att');
+    expect(resolveDrop({ ...args, y: Y.mid })?.line).toBe('mid');
+    expect(resolveDrop({ ...args, y: Y.def })?.line).toBe('def');
   });
 
-  it('snaps to the nearest free slot on the line', () => {
-    const pitch = arrangedPitch();
-    // mid has m0..m2 in slots 0..2; a drop at the far left edge misses the
-    // direct-hit radius of slot 0 and snaps to the nearest free slot, 3.
-    const target = resolveDrop({
-      x: 0.02,
-      y: 0.45,
-      playerPosition: 'ATT',
-      pitch,
-    });
-    expect(target).toEqual({ line: 'mid', slot: 3 });
+  it('inserts into an empty line at index 0', () => {
+    expect(
+      resolveDrop({ ...base, x: 0.5, y: Y.mid, playerPosition: 'MID' }),
+    ).toEqual({ line: 'mid', mode: 'insert', index: 0 });
   });
 
-  it('targets an occupied slot on a direct hit (replace)', () => {
-    const pitch = arrangedPitch();
-    // Slot 0 of mid is centered at x = 0.1 and holds m0.
-    const target = resolveDrop({
-      x: 0.1,
-      y: 0.45,
-      playerPosition: 'ATT',
-      pitch,
-    });
-    expect(target).toEqual({ line: 'mid', slot: 0 });
+  it('replaces the player under a direct hit', () => {
+    const pitch = autoArrange(startingXi()); // mid centers: .34 .5 .66
+    expect(
+      resolveDrop({ pitch, draggingId: null, x: 0.34, y: Y.mid, playerPosition: 'ATT' }),
+    ).toEqual({ line: 'mid', mode: 'replace', targetId: 'm0' });
   });
 
-  it('targets the hovered occupied slot when the line is full', () => {
+  it('inserts by x-order between and around players', () => {
+    const pitch = autoArrange(startingXi());
+    const drop = (x: number) =>
+      resolveDrop({ pitch, draggingId: null, x, y: Y.mid, playerPosition: 'ATT' });
+    expect(drop(0.02)).toEqual({ line: 'mid', mode: 'insert', index: 0 });
+    expect(drop(0.42)).toEqual({ line: 'mid', mode: 'insert', index: 1 });
+    expect(drop(0.98)).toEqual({ line: 'mid', mode: 'insert', index: 3 });
+  });
+
+  it('replaces on a full line even without a direct hit', () => {
     let pitch = createEmptyPitch();
-    for (let slot = 0; slot < 5; slot += 1)
-      pitch = applyDrop(pitch, `m${slot}`, { line: 'mid', slot });
+    pitch = { ...pitch, mid: ['a', 'b', 'c', 'd', 'e', 'f'] };
     const target = resolveDrop({
-      x: 0.99,
-      y: 0.45,
-      playerPosition: 'ATT',
       pitch,
+      draggingId: null,
+      x: 0.5,
+      y: Y.mid,
+      playerPosition: 'MID',
     });
-    expect(target).toEqual({ line: 'mid', slot: 4 });
+    expect(target?.mode).toBe('replace');
+  });
+
+  it('excludes the dragged player when repositioning within a line', () => {
+    const pitch = autoArrange(startingXi());
+    // Dragging m1 to the far left inserts before m0, never "hits" itself.
+    expect(
+      resolveDrop({ pitch, draggingId: 'm1', x: 0.02, y: Y.mid, playerPosition: 'MID' }),
+    ).toEqual({ line: 'mid', mode: 'insert', index: 0 });
   });
 
   it('rejects goalkeepers outside the goal and outfielders in it', () => {
-    const pitch = createEmptyPitch();
     expect(
-      resolveDrop({ x: 0.5, y: 0.45, playerPosition: 'GK', pitch }),
+      resolveDrop({ ...base, x: 0.5, y: Y.mid, playerPosition: 'GK' }),
     ).toBeNull();
     expect(
-      resolveDrop({ x: 0.5, y: 0.95, playerPosition: 'DEF', pitch }),
+      resolveDrop({ ...base, x: 0.5, y: Y.goal, playerPosition: 'DEF' }),
     ).toBeNull();
   });
 
-  it('lets a goalkeeper target the goal slot', () => {
-    const pitch = createEmptyPitch();
+  it('lets a goalkeeper drop into the goal', () => {
     expect(
-      resolveDrop({ x: 0.5, y: 0.95, playerPosition: 'GK', pitch }),
-    ).toEqual({ line: 'goal', slot: 0 });
+      resolveDrop({ ...base, x: 0.5, y: Y.goal, playerPosition: 'GK' }),
+    ).toEqual({ line: 'goal', mode: 'insert', index: 0 });
   });
 });
 
 describe('applyDrop', () => {
-  it('places a bench player into an empty slot', () => {
-    const pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 2 });
-    expect(pitch.mid[2]).toBe('m0');
+  it('inserts a player at the given index', () => {
+    let pitch = createEmptyPitch();
+    pitch = applyDrop(pitch, 'm0', { line: 'mid', mode: 'insert', index: 0 });
+    pitch = applyDrop(pitch, 'm1', { line: 'mid', mode: 'insert', index: 1 });
+    pitch = applyDrop(pitch, 'x', { line: 'mid', mode: 'insert', index: 1 });
+    expect(pitch.mid).toEqual(['m0', 'x', 'm1']);
   });
 
-  it('moves a placed player, clearing the old slot', () => {
-    let pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 0 });
-    pitch = applyDrop(pitch, 'm0', { line: 'att', slot: 4 });
-    expect(pitch.mid[0]).toBeNull();
-    expect(pitch.att[4]).toBe('m0');
+  it('moves a placed player to another line, keeping lines dense', () => {
+    let pitch = applyDrop(createEmptyPitch(), 'a0', { line: 'att', mode: 'insert', index: 0 });
+    pitch = applyDrop(pitch, 'a0', { line: 'mid', mode: 'insert', index: 0 });
+    expect(pitch.att).toEqual([]);
+    expect(pitch.mid).toEqual(['a0']);
   });
 
-  it('replaces the occupant when the dragged player comes from the bench', () => {
-    let pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 0 });
-    pitch = applyDrop(pitch, 'bench1', { line: 'mid', slot: 0 });
-    expect(pitch.mid[0]).toBe('bench1');
-    expect(findSlot(pitch, 'm0')).toBeNull();
+  it('sends the occupant to the bench when replacing from the bench', () => {
+    let pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', mode: 'insert', index: 0 });
+    pitch = applyDrop(pitch, 'bench', { line: 'mid', mode: 'replace', targetId: 'm0' });
+    expect(pitch.mid).toEqual(['bench']);
+    expect(findLineOf(pitch, 'm0')).toBeNull();
   });
 
-  it('swaps when both players are on the pitch', () => {
-    let pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 0 });
-    pitch = applyDrop(pitch, 'a0', { line: 'att', slot: 1 });
-    pitch = applyDrop(pitch, 'a0', { line: 'mid', slot: 0 });
-    expect(pitch.mid[0]).toBe('a0');
-    expect(pitch.att[1]).toBe('m0');
+  it('swaps players across lines, preserving both counts', () => {
+    let pitch = applyDrop(createEmptyPitch(), 'd0', { line: 'def', mode: 'insert', index: 0 });
+    pitch = applyDrop(pitch, 'a0', { line: 'att', mode: 'insert', index: 0 });
+    pitch = applyDrop(pitch, 'd0', { line: 'att', mode: 'replace', targetId: 'a0' });
+    expect(pitch.att).toEqual(['d0']);
+    expect(pitch.def).toEqual(['a0']);
   });
 
-  it('is a no-op when dropping a player on its own slot', () => {
-    const pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 0 });
-    expect(applyDrop(pitch, 'm0', { line: 'mid', slot: 0 })).toBe(pitch);
+  it('reorders within a line when replacing a same-line player', () => {
+    let pitch = createEmptyPitch();
+    ['m0', 'm1', 'm2'].forEach((id, index) => {
+      pitch = applyDrop(pitch, id, { line: 'mid', mode: 'insert', index });
+    });
+    pitch = applyDrop(pitch, 'm2', { line: 'mid', mode: 'replace', targetId: 'm0' });
+    expect(pitch.mid).toEqual(['m2', 'm0', 'm1']);
+  });
+
+  it('is a no-op when replacing a player with itself', () => {
+    const pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', mode: 'insert', index: 0 });
+    expect(applyDrop(pitch, 'm0', { line: 'mid', mode: 'replace', targetId: 'm0' })).toBe(pitch);
   });
 });
 
 describe('removeFromPitch', () => {
-  it('clears the player slot and ignores players not on the pitch', () => {
-    const pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', slot: 0 });
-    expect(removeFromPitch(pitch, 'm0').mid[0]).toBeNull();
+  it('clears the player and ignores players not on the pitch', () => {
+    const pitch = applyDrop(createEmptyPitch(), 'm0', { line: 'mid', mode: 'insert', index: 0 });
+    expect(removeFromPitch(pitch, 'm0').mid).toEqual([]);
     expect(removeFromPitch(pitch, 'ghost')).toBe(pitch);
   });
 });
 
 describe('derived values', () => {
-  it('derives the formation from slot occupancy', () => {
+  it('derives the formation from the line counts', () => {
     expect(deriveFormation(createEmptyPitch())).toBeNull();
     expect(deriveFormation(autoArrange(startingXi()))).toBe('4-3-3');
   });
@@ -186,8 +216,26 @@ describe('derived values', () => {
   it('validates eleven placed players including the goalkeeper', () => {
     const full = autoArrange(startingXi());
     expect(isValidXi(full)).toBe(true);
+    expect(placedIds(full)).toHaveLength(11);
     expect(isValidXi(removeFromPitch(full, 'a0'))).toBe(false);
     expect(isValidXi(removeFromPitch(full, 'gk'))).toBe(false);
-    expect(placedIds(full)).toHaveLength(11);
+  });
+
+  it('allows up to six players on an outfield line', () => {
+    let pitch = createEmptyPitch();
+    const sixth = Array.from({ length: 6 }, (_, i) => `d${i}`);
+    sixth.forEach((id, index) => {
+      pitch = applyDrop(pitch, id, { line: 'def', mode: 'insert', index });
+    });
+    expect(pitch.def).toHaveLength(6);
+    // A seventh drop (not a direct hit) replaces rather than overflows.
+    const target = resolveDrop({
+      pitch,
+      draggingId: null,
+      x: playerX(0, 6),
+      y: Y.def,
+      playerPosition: 'DEF',
+    });
+    expect(target?.mode).toBe('replace');
   });
 });

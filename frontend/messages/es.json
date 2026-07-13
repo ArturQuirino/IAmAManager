@@ -140,7 +140,6 @@
     "bench": "Banquillo",
     "benchEmpty": "Todos están en el campo.",
     "benchDropHint": "Suelta aquí para mandar al jugador al banquillo.",
-    "emptySlot": "Posición vacía",
     "dragHint": "Arrastra a los jugadores al campo. Suelta sobre una posición ocupada para reemplazar al jugador, o arrastra a un jugador de vuelta al banquillo para quitarlo.",
     "invalidDrop": "Solo el portero puede ocupar la portería, y el portero no puede jugar en otra línea.",
     "requirements": "Alinea exactamente 11 jugadores con exactamente un portero.",

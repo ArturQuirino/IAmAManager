@@ -140,7 +140,6 @@
     "bench": "Banco de reservas",
     "benchEmpty": "Todos estão em campo.",
     "benchDropHint": "Solte aqui para mandar o jogador ao banco.",
-    "emptySlot": "Posição vazia",
     "dragHint": "Arraste os jogadores para o campo. Solte sobre uma posição ocupada para substituir o jogador, ou arraste um jogador de volta ao banco para removê-lo.",
     "invalidDrop": "Apenas o goleiro pode ocupar o gol, e o goleiro não pode jogar na linha.",
     "requirements": "Escale exatamente 11 jogadores com exatamente um goleiro.",

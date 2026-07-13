@@ -6,8 +6,8 @@ import type { Player } from '@/lib/api';
 import {
   LINE_BANDS,
   lineY,
+  playerX,
   resolveDrop,
-  slotX,
   type DropTarget,
   type LineId,
   type PitchState,
@@ -51,7 +51,7 @@ export default function Pitch({
     const y = (event.clientY - rect.top) / rect.height;
     onDropPlayer(
       player.id,
-      resolveDrop({ x, y, playerPosition: player.position, pitch }),
+      resolveDrop({ x, y, playerPosition: player.position, pitch, draggingId }),
     );
   }
 
@@ -100,33 +100,27 @@ export default function Pitch({
         className="absolute bottom-0 left-1/2 h-2 w-1/5 -translate-x-1/2 rounded-t-sm bg-white/50"
       />
 
-      {/* Slots */}
+      {/* Players, centered per line by count */}
       {LINE_BANDS.flatMap(({ line }) =>
-        pitch[line].map((playerId, slot) => {
-          const player = playerId ? playersById.get(playerId) : undefined;
+        pitch[line].map((playerId, index) => {
+          const player = playersById.get(playerId);
+          if (!player) return null;
           return (
             <div
-              key={`${line}-${slot}`}
+              key={playerId}
               className="absolute -translate-x-1/2 -translate-y-1/2"
               style={{
-                left: `${slotX(line, slot) * 100}%`,
+                left: `${playerX(index, pitch[line].length) * 100}%`,
                 top: `${lineY(line) * 100}%`,
               }}
             >
-              {player ? (
-                <PlayerChip
-                  player={player}
-                  isDragging={draggingId === player.id}
-                  variant="pitch"
-                  onDragStart={onDragStart}
-                  onDragEnd={onDragEnd}
-                />
-              ) : (
-                <div
-                  aria-label={t('emptySlot')}
-                  className="h-9 w-12 rounded border border-dashed border-white/40"
-                />
-              )}
+              <PlayerChip
+                player={player}
+                isDragging={draggingId === player.id}
+                variant="pitch"
+                onDragStart={onDragStart}
+                onDragEnd={onDragEnd}
+              />
             </div>
           );
         }),

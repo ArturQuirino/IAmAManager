@@ -15,7 +15,7 @@ import {
   autoArrange,
   createEmptyPitch,
   deriveFormation,
-  findSlot,
+  findLineOf,
   isValidXi,
   placedIds,
   removeFromPitch,
@@ -68,7 +68,7 @@ export default function TacticsPage() {
   const goalkeeperCount = pitch.goal[0] === null ? 0 : 1;
   const formation = deriveFormation(pitch);
   const isDraggingFromPitch =
-    draggingId !== null && findSlot(pitch, draggingId) !== null;
+    draggingId !== null && findLineOf(pitch, draggingId) !== null;
 
   function handleDragStart(playerId: string) {
     setDraggingId(playerId);

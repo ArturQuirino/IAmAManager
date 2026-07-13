@@ -185,12 +185,12 @@ describe('TacticsPage', () => {
     getTacticsMock.mockResolvedValue(tactics());
     const { pitch, bench } = await loadPage();
 
-    // Midfield slot 0 (Midfielder 0) is centered at x=10%, y=44%.
+    // With three midfielders centered, Midfielder 0 sits at x=34%, y=44%.
     dragAndDrop(
       within(bench).getByLabelText('Reserve Mid'),
       pitch,
       'bench-mid',
-      { x: 10, y: 44 },
+      { x: 34, y: 44 },
     );
 
     expect(within(pitch).getByLabelText('Reserve Mid')).toBeInTheDocument();
