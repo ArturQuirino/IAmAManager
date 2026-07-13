@@ -15,6 +15,15 @@ import { useAuth } from '@/hooks/useAuth';
 
 const REQUIRED_STARTERS = 11;
 
+const ATTRIBUTES = [
+  'pace',
+  'shooting',
+  'passing',
+  'dribbling',
+  'defending',
+  'physical',
+] as const;
+
 // Outfield lines, in the order a formation string reads (e.g. "4-3-3").
 const FORMATION_LINES: PlayerPosition[] = ['DEF', 'MID', 'ATT'];
 
@@ -228,6 +237,14 @@ export default function TacticsPage() {
                   <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">
                     {tTeam('columns.position')}
                   </th>
+                  {ATTRIBUTES.map((key) => (
+                    <th
+                      key={key}
+                      className="px-3 py-3 text-right text-slate-400 font-medium w-16"
+                    >
+                      {tTeam(`columns.${key}`)}
+                    </th>
+                  ))}
                   <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">
                     {tTeam('columns.overall')}
                   </th>
@@ -264,6 +281,14 @@ export default function TacticsPage() {
                           {tTeam(`positions.${player.position}`)}
                         </span>
                       </td>
+                      {ATTRIBUTES.map((key) => (
+                        <td
+                          key={key}
+                          className="px-3 py-3 text-right text-slate-300 font-mono"
+                        >
+                          {player[key]}
+                        </td>
+                      ))}
                       <td className="px-4 py-3 text-right font-bold text-white font-mono">
                         {player.overall}
                       </td>
