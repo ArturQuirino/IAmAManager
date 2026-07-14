@@ -90,13 +90,33 @@ export interface Player {
   overall: number;
 }
 
-export interface TeamResponse {
+export interface TeamInfo {
   teamName: string;
-  players: Player[];
+  // Null while the team has not been placed in a division yet.
+  divisionLevel: number | null;
+  seasonNumber: number | null;
+  played: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  goalDifference: number;
+  points: number;
+  playersCount: number;
 }
 
-export async function getMyTeam(): Promise<TeamResponse> {
-  return apiFetch<TeamResponse>('/players/my-team');
+export async function getTeamInfo(): Promise<TeamInfo> {
+  return apiFetch<TeamInfo>('/team');
+}
+
+// Renaming returns the refreshed team info, so the caller can update the screen
+// in a single round-trip. Throws ApiError('team.nameAlreadyExists') on a clash.
+export async function updateTeamName(teamName: string): Promise<TeamInfo> {
+  return apiFetch<TeamInfo>('/team', {
+    method: 'PATCH',
+    body: JSON.stringify({ teamName }),
+  });
 }
 
 export interface StandingEntry {

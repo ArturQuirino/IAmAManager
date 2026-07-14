@@ -8,6 +8,7 @@
   },
   "nav": {
     "home": "Inicio",
+    "team": "Equipo",
     "squad": "Plantilla",
     "tactics": "Táctica",
     "matches": "Partidos",
@@ -60,10 +61,28 @@
     "loginLink": "Iniciar sesión"
   },
   "team": {
+    "title": "Equipo",
+    "subtitle": "Información general",
+    "nameLabel": "Nombre del equipo",
+    "save": "Guardar cambios",
+    "saving": "Guardando...",
+    "saved": "Nombre del equipo actualizado.",
+    "overview": "Resumen de la temporada",
+    "division": "División",
+    "divisionSeason": "División {level} · Temporada {season}",
+    "noDivision": "Aún sin división",
+    "players": "Jugadores",
+    "stats": {
+      "played": "PJ",
+      "wins": "G",
+      "draws": "E",
+      "losses": "P",
+      "goalsFor": "GF",
+      "goalsAgainst": "GC",
+      "goalDifference": "DG",
+      "points": "Pts"
+    },
     "loadError": "Error al cargar tu equipo. Inicia sesión nuevamente.",
-    "backToLogin": "Volver al inicio de sesión",
-    "playersCount": "{count, plural, one {# jugador} other {# jugadores}}",
-    "logout": "Cerrar sesión",
     "columns": {
       "name": "Nombre",
       "position": "Pos.",
@@ -196,7 +215,8 @@
       "lineupIncomplete": "Ambos equipos necesitan una alineación titular válida primero."
     },
     "team": {
-      "notFound": "No encontramos tu equipo."
+      "notFound": "No encontramos tu equipo.",
+      "nameAlreadyExists": "Ese nombre de equipo ya está en uso. Elige otro."
     },
     "common": {
       "unknownError": "Ocurrió un error. Inténtalo de nuevo."

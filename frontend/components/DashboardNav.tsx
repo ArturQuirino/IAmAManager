@@ -8,6 +8,7 @@ import { clearToken } from '@/lib/api';
 // The primary in-game screens, in navigation order (see docs/screens.md).
 const NAV_ITEMS = [
   { key: 'home', href: '/home' },
+  { key: 'team', href: '/team' },
   { key: 'squad', href: '/squad' },
   { key: 'tactics', href: '/tactics' },
   { key: 'matches', href: '/matches' },

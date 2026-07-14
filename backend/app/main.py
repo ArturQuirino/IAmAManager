@@ -16,6 +16,7 @@ from app.routers import (
     players,
     squad,
     tactics,
+    team,
     youth,
 )
 from app.scheduler import start_scheduler
@@ -63,6 +64,7 @@ api_router = health.router
 app.include_router(api_router, prefix="/api")
 app.include_router(auth.router, prefix="/api")
 app.include_router(players.router, prefix="/api")
+app.include_router(team.router, prefix="/api")
 app.include_router(competition.router, prefix="/api")
 app.include_router(squad.router, prefix="/api")
 app.include_router(tactics.router, prefix="/api")

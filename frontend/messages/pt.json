@@ -8,6 +8,7 @@
   },
   "nav": {
     "home": "Início",
+    "team": "Time",
     "squad": "Elenco",
     "tactics": "Tática",
     "matches": "Partidas",
@@ -60,10 +61,28 @@
     "loginLink": "Entrar"
   },
   "team": {
+    "title": "Time",
+    "subtitle": "Informações gerais",
+    "nameLabel": "Nome do time",
+    "save": "Salvar alterações",
+    "saving": "Salvando...",
+    "saved": "Nome do time atualizado.",
+    "overview": "Resumo da temporada",
+    "division": "Divisão",
+    "divisionSeason": "Divisão {level} · Temporada {season}",
+    "noDivision": "Ainda sem divisão",
+    "players": "Jogadores",
+    "stats": {
+      "played": "J",
+      "wins": "V",
+      "draws": "E",
+      "losses": "D",
+      "goalsFor": "GP",
+      "goalsAgainst": "GC",
+      "goalDifference": "SG",
+      "points": "Pts"
+    },
     "loadError": "Erro ao carregar o time. Tente fazer login novamente.",
-    "backToLogin": "Voltar ao login",
-    "playersCount": "{count, plural, one {# jogador} other {# jogadores}}",
-    "logout": "Sair",
     "columns": {
       "name": "Nome",
       "position": "Pos.",
@@ -196,7 +215,8 @@
       "lineupIncomplete": "Os dois times precisam de uma escalação titular válida antes."
     },
     "team": {
-      "notFound": "Não encontramos o seu time."
+      "notFound": "Não encontramos o seu time.",
+      "nameAlreadyExists": "Este nome de time já está em uso. Escolha outro."
     },
     "common": {
       "unknownError": "Ocorreu um erro. Tente novamente."

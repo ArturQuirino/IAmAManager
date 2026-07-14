@@ -1,176 +1,195 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { FormEvent, useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { clearToken, getMyTeam, Player } from '@/lib/api';
+import {
+  ApiError,
+  getTeamInfo,
+  TeamInfo,
+  updateTeamName,
+  UNKNOWN_ERROR_CODE,
+} from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 
+const TEAM_NAME_MIN_LENGTH = 2;
+const TEAM_NAME_MAX_LENGTH = 50;
+
+// Season record fields, in display order. Each maps to a `TeamInfo` numeric
+// field and a label under the `team.stats` namespace.
+const RECORD_FIELDS = [
+  'played',
+  'wins',
+  'draws',
+  'losses',
+  'goalsFor',
+  'goalsAgainst',
+  'goalDifference',
+  'points',
+] as const;
+
 export default function TeamPage() {
-  const router = useRouter();
   const t = useTranslations('team');
+  const tErrors = useTranslations('errors');
   const { isAuthenticated } = useAuth();
-  const [teamName, setTeamName] = useState('');
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [team, setTeam] = useState<TeamInfo | null>(null);
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated === false) return;
-
     if (isAuthenticated) {
-      getMyTeam()
+      getTeamInfo()
         .then((data) => {
-          setTeamName(data.teamName);
-          setPlayers(data.players);
+          setTeam(data);
+          setName(data.teamName);
         })
-        .catch(() => {
-          setError(t('loadError'));
-        })
+        .catch(() => setError(t('loadError')))
         .finally(() => setLoading(false));
     }
   }, [isAuthenticated, t]);
 
-  function handleLogout() {
-    clearToken();
-    router.replace('/login');
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    setSaveError('');
+    setSaved(false);
+    setSaving(true);
+    try {
+      const updated = await updateTeamName(name);
+      setTeam(updated);
+      setName(updated.teamName);
+      setSaved(true);
+    } catch (err) {
+      const code =
+        err instanceof ApiError && tErrors.has(err.errorCode)
+          ? err.errorCode
+          : UNKNOWN_ERROR_CODE;
+      setSaveError(tErrors(code));
+    } finally {
+      setSaving(false);
+    }
   }
 
   if (isAuthenticated === null || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-[60vh] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  if (error) {
+  if (error || !team) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="text-center">
-          <p className="text-red-400 mb-4">{error}</p>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 bg-accent text-surface font-semibold rounded-lg"
-          >
-            {t('backToLogin')}
-          </button>
-        </div>
+      <div className="min-h-[60vh] flex items-center justify-center px-4">
+        <p className="text-red-400">{error || t('loadError')}</p>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen">
-      <header className="border-b border-slate-700/50 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">⚽</span>
-            <div>
-              <h1 className="text-xl font-bold text-white">{teamName}</h1>
-              <p className="text-slate-400 text-sm">
-                {t('playersCount', { count: players.length })}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-600 hover:border-slate-500 rounded-lg transition-colors"
-          >
-            {t('logout')}
-          </button>
-        </div>
-      </header>
+  const trimmedName = name.trim();
+  const isUnchanged = trimmedName === team.teamName;
+  const isTooShort = trimmedName.length < TEAM_NAME_MIN_LENGTH;
 
-      <main className="max-w-6xl mx-auto px-4 py-8">
-        <div className="bg-card border border-slate-700/50 rounded-xl overflow-hidden shadow-2xl">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-slate-700/50 bg-surface/50">
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium">
-                    {t('columns.name')}
-                  </th>
-                  <th className="px-4 py-3 text-left text-slate-400 font-medium w-20">
-                    {t('columns.position')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.pace')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.shooting')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.passing')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.dribbling')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.defending')}
-                  </th>
-                  <th className="px-3 py-3 text-right text-slate-400 font-medium w-16">
-                    {t('columns.physical')}
-                  </th>
-                  <th className="px-4 py-3 text-right text-slate-400 font-medium w-20">
-                    {t('columns.overall')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {players.map((player, index) => (
-                  <tr
-                    key={player.id}
-                    className={`border-b border-slate-700/30 ${
-                      index % 2 === 0 ? 'bg-transparent' : 'bg-surface/30'
-                    } hover:bg-accent/5 transition-colors`}
-                  >
-                    <td className="px-4 py-3 font-medium text-white">
-                      {player.name}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="inline-block px-2 py-0.5 bg-slate-700 text-slate-300 rounded text-xs font-medium">
-                        {t(`positions.${player.position}`)}
-                      </span>
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.pace}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.shooting}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.passing}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.dribbling}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.defending}
-                    </td>
-                    <td className="px-3 py-3 text-right text-slate-300 font-mono">
-                      {player.physical}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span
-                        className={`font-bold ${
-                          player.overall >= 80
-                            ? 'text-accent'
-                            : player.overall >= 70
-                              ? 'text-yellow-400'
-                              : 'text-slate-400'
-                        }`}
-                      >
-                        {player.overall}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  return (
+    <main className="max-w-2xl mx-auto px-4 py-8">
+      <div className="flex items-center gap-3 mb-6">
+        <span className="text-2xl">⚽</span>
+        <div>
+          <h1 className="text-2xl font-bold text-white">{t('title')}</h1>
+          <p className="text-slate-400 text-sm">{t('subtitle')}</p>
         </div>
-      </main>
-    </div>
+      </div>
+
+      <section className="bg-card border border-slate-700/50 rounded-xl p-6 shadow-2xl mb-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label
+              htmlFor="teamName"
+              className="block text-sm font-medium text-slate-300 mb-1.5"
+            >
+              {t('nameLabel')}
+            </label>
+            <input
+              id="teamName"
+              type="text"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                setSaved(false);
+                setSaveError('');
+              }}
+              required
+              minLength={TEAM_NAME_MIN_LENGTH}
+              maxLength={TEAM_NAME_MAX_LENGTH}
+              autoComplete="off"
+              className="w-full px-4 py-2.5 bg-surface border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition"
+            />
+          </div>
+
+          {saveError && (
+            <p className="text-red-400 text-sm bg-red-400/10 border border-red-400/20 rounded-lg px-4 py-2.5">
+              {saveError}
+            </p>
+          )}
+
+          {saved && (
+            <p className="text-accent text-sm bg-accent/10 border border-accent/20 rounded-lg px-4 py-2.5">
+              {t('saved')}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={saving || isUnchanged || isTooShort}
+            className="w-full py-2.5 px-4 bg-accent hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed text-surface font-semibold rounded-lg transition-colors"
+          >
+            {saving ? t('saving') : t('save')}
+          </button>
+        </form>
+      </section>
+
+      <section className="bg-card border border-slate-700/50 rounded-xl p-6 shadow-2xl">
+        <p className="text-xs uppercase tracking-wide text-slate-500 mb-4">
+          {t('overview')}
+        </p>
+
+        <dl className="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <dt className="text-slate-400 text-sm">{t('division')}</dt>
+            <dd className="text-white font-semibold">
+              {team.divisionLevel === null
+                ? t('noDivision')
+                : t('divisionSeason', {
+                    level: team.divisionLevel,
+                    season: team.seasonNumber ?? 1,
+                  })}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-slate-400 text-sm">{t('players')}</dt>
+            <dd className="text-white font-semibold">{team.playersCount}</dd>
+          </div>
+        </dl>
+
+        <dl className="grid grid-cols-4 gap-3 text-center">
+          {RECORD_FIELDS.map((field) => (
+            <div
+              key={field}
+              className="bg-surface/50 border border-slate-700/50 rounded-lg py-3"
+            >
+              <dt className="text-xs uppercase tracking-wide text-slate-500">
+                {t(`stats.${field}`)}
+              </dt>
+              <dd className="text-lg font-bold text-white font-mono tabular-nums">
+                {team[field]}
+              </dd>
+            </div>
+          ))}
+        </dl>
+      </section>
+    </main>
   );
 }

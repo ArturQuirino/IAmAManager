@@ -8,6 +8,7 @@
   },
   "nav": {
     "home": "Home",
+    "team": "Team",
     "squad": "Squad",
     "tactics": "Tactics",
     "matches": "Matches",
@@ -60,10 +61,28 @@
     "loginLink": "Sign in"
   },
   "team": {
+    "title": "Team",
+    "subtitle": "General information",
+    "nameLabel": "Team name",
+    "save": "Save changes",
+    "saving": "Saving...",
+    "saved": "Team name updated.",
+    "overview": "Season overview",
+    "division": "Division",
+    "divisionSeason": "Division {level} · Season {season}",
+    "noDivision": "Not placed yet",
+    "players": "Players",
+    "stats": {
+      "played": "P",
+      "wins": "W",
+      "draws": "D",
+      "losses": "L",
+      "goalsFor": "GF",
+      "goalsAgainst": "GA",
+      "goalDifference": "GD",
+      "points": "Pts"
+    },
     "loadError": "Failed to load your team. Please sign in again.",
-    "backToLogin": "Back to sign in",
-    "playersCount": "{count, plural, one {# player} other {# players}}",
-    "logout": "Sign out",
     "columns": {
       "name": "Name",
       "position": "Pos.",
@@ -196,7 +215,8 @@
       "lineupIncomplete": "Both teams need a valid starting XI first."
     },
     "team": {
-      "notFound": "We couldn't find your team."
+      "notFound": "We couldn't find your team.",
+      "nameAlreadyExists": "That team name is already taken. Please choose another."
     },
     "common": {
       "unknownError": "Something went wrong. Please try again."
