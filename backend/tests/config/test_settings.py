@@ -27,3 +27,15 @@ def test_should_seed() -> None:
     assert Settings(app_env="development", run_seed="false").should_seed is True
     assert Settings(app_env="production", run_seed="false").should_seed is False
     assert Settings(app_env="production", run_seed="true").should_seed is True
+
+
+def test_database_url_without_sslmode_has_no_query_string() -> None:
+    settings = Settings(postgres_sslmode="")
+
+    assert "?" not in settings.database_url
+
+
+def test_database_url_with_sslmode_appends_query_string() -> None:
+    settings = Settings(postgres_sslmode="require")
+
+    assert settings.database_url.endswith("?sslmode=require")

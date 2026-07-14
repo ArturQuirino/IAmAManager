@@ -30,6 +30,9 @@ class Settings(BaseSettings):
     postgres_db: str = "football_manager"
     postgres_user: str = "fm_user"
     postgres_password: str = "fm_password"
+    # Required by managed Postgres providers that mandate TLS (e.g. Neon).
+    # Empty by default so local/Docker Compose connections are unaffected.
+    postgres_sslmode: str = ""
 
     jwt_secret: str = "local_dev_secret_change_in_production"
     jwt_expires_in: str = "7d"
@@ -46,10 +49,13 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
-        return (
+        base = (
             f"postgresql+psycopg2://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
         )
+        if self.postgres_sslmode:
+            return f"{base}?sslmode={self.postgres_sslmode}"
+        return base
 
     @property
     def jwt_expires_delta(self) -> timedelta:
