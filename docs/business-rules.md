@@ -17,4 +17,4 @@ Scope note: each document reflects the rules **as currently understood/designed*
 
 ## Cross-cutting
 
-- **Localization:** all user-facing messages (API errors, UI text) are in **Portuguese**. Code, identifiers, and documentation (including these files) are in **English**.
+- **Localization:** the interface supports **Portuguese, English, and Spanish**. The backend returns stable, language-independent error codes and the frontend translates them using the active locale. Code, identifiers, and documentation are written in English.

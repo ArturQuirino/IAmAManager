@@ -1,6 +1,6 @@
 # Match Simulation
 
-How a match's result is computed. This logic is adapted from a prior prototype (a separate local repository, `RealManager`) where it was already implemented end-to-end, and is carried over here as the intended design for this game's match engine. See [Players and squad — Player entity](./players.md#player-entity) for the attribute model this simulation depends on.
+How a match's result is computed. The engine was adapted from the earlier `RealManager` prototype and is now implemented in this codebase. See [Players and squad — Player entity](./players.md#player-entity) for the attribute model it depends on.
 
 ## Rules
 
@@ -83,7 +83,7 @@ All success-chance formulas include a time-decay ("fatigue") term: success chanc
 
 ## Status
 
-Not yet implemented in this codebase. This document describes the intended design, carried over from the reference prototype.
+Implemented end-to-end in `MatchSimulationService`, including deterministic RNG injection for tests, lineup validation, the 91-event log, score persistence, and atomic standings updates. Matches can be read and simulated through authenticated match endpoints; normal game-world progression uses the daily matchday service.
 
 ## Open questions
 

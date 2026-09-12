@@ -35,7 +35,7 @@ Cloud Scheduler ──cron──> Cloud Run Job (imagem do backend) ────
 | Frontend | **Vercel** (Hobby, grátis) | Next.js nativo; env `BACKEND_INTERNAL_URL` → URL do Cloud Run. O `rewrites()` mantém tudo same-origin (`/api`), sem CORS |
 | Backend | **Google Cloud Run** (escala a zero) | Reusa `backend/Dockerfile.prod`; paga por request (~$0 no volume); cold start ~1–3s |
 | Banco | **Neon** (Postgres serverless, grátis) | Autosuspende quando ocioso e resume ao conectar — ideal para "fica dias sem acesso" |
-| Jobs | **Cloud Scheduler → Cloud Run Job** | Mesma imagem do backend, entrypoint do job (espelha o padrão AWS EventBridge→RunTask) |
+| Jobs | **Scheduler interno (atual)** / Cloud Scheduler → Cloud Run Job (alvo) | O backend já possui um scheduler diário em processo; o job externo ainda requer um entrypoint próprio |
 | Migrations | **Cloud Run Job** (`alembic upgrade head`) | Passo separado no deploy (não a cada cold start) |
 | Segredos | **GCP Secret Manager** (ou envs) | `JWT_SECRET`, connection string do Neon |
 
@@ -62,8 +62,12 @@ Feito por console/`gcloud` + Vercel (opcionalmente Terraform GCP no futuro):
    e executá-lo a cada deploy que tenha migration nova.
 4. **Frontend (Vercel):** importar o repo (`frontend/`), setar
    `BACKEND_INTERNAL_URL` = URL do serviço Cloud Run.
-5. **Jobs:** Cloud Scheduler (2 crons, timezone `America/Sao_Paulo`) disparando
-   Cloud Run Jobs que rodam os módulos de job com a URL do Neon.
+5. **Ciclo diário:** no estado atual, habilitar `SCHEDULER_ENABLED=true` no
+   serviço faz o backend executar o ciclo de partidas diariamente no horário de
+   `MATCHDAY_HOUR`/`MATCHDAY_MINUTE`. Em uma plataforma que escala a zero, essa
+   estratégia não garante a execução; antes do deploy definitivo, crie um
+   entrypoint de job que invoque `MatchdayService.run_due_matchday()` e agende-o
+   no Cloud Scheduler.
 
 ## Custo
 
@@ -105,9 +109,10 @@ EventBridge Scheduler ──cron──> Job (ECS RunTask, imagem do backend)
 | Jobs agendados | EventBridge Scheduler + ECS RunTask | `jobs.tf` | Rotinas periódicas |
 | Observabilidade | CloudWatch Logs | `ecs.tf`, `jobs.tf` | Logs dos containers (retenção 14 dias) |
 
-## Jobs agendados (Padrão A)
+## Jobs agendados (Padrão A, ainda incompleto)
 
-**EventBridge Scheduler → ECS RunTask** (`jobs.tf`). Cada job roda a mesma
+**EventBridge Scheduler → ECS RunTask** (`jobs.tf`). A infraestrutura está
+declarada, mas os módulos configurados como entrypoint ainda não existem. Cada job roda a mesma
 imagem do backend com um entrypoint diferente, reusando código, acesso ao banco
 e segredos, sem expor endpoint. Crons no timezone de `var.jobs_timezone`.
 
@@ -155,22 +160,26 @@ O backend lê `APP_ENV` (`Settings.app_env`) para decidir seed e modo produção
 template Node; foi renomeada para `APP_ENV` em todo o stack. O `NODE_ENV` que
 permanece é apenas o do container do **frontend** (Next.js), onde é legítimo.
 
-## Rotinas periódicas dependem de lógica de jogo ainda não implementada
+## Estado das rotinas periódicas
 
-O **wiring de agendamento** está pronto nos dois tiers (Cloud Scheduler→Cloud
-Run Job; EventBridge→RunTask em `jobs.tf`), mas os módulos `app/jobs/run_matches`
-e `app/jobs/rotate_players` **ainda não existem** — e não podem ser meros
-wrappers, porque a lógica que eles chamariam também não existe:
+A lógica de jogo está implementada: `MatchdayService` simula a próxima rodada
+de todas as divisões, conclui e renova temporadas quando necessário e atualiza
+a base a cada sete dias de jogo. O processamento é idempotente por data através
+do `GameClock`. O backend também oferece um scheduler interno configurável e,
+somente em desenvolvimento, `POST /api/dev/run-matchday` para disparo manual.
 
-- **Simulação de partidas:** `docs/match-simulation.md` marca "Not yet
-  implemented". Não há modelo de partida/rodada nem service de simulação.
-- **Rotação semanal da base (youth academy):** `docs/players.md` descreve a
-  regra (4 jogadores/semana, um por posição; não selecionados são perdidos no
-  próximo refresh), mas não há modelo nem service.
+A pendência está na integração dos jobs externos: `jobs.tf` ainda aponta para
+`app.jobs.run_matches` e `app.jobs.rotate_players`, módulos que não existem.
+Além disso, a lógica atual concentra partidas e rotação da base em um único
+ciclo diário, enquanto o Terraform ainda descreve dois jobs separados. Antes
+de ativar os schedules de Cloud Run ou EventBridge, é preciso escolher um único
+modelo e criar o(s) entrypoint(s) fino(s) correspondente(s). Até lá:
 
-Ou seja, antes dos jobs, é preciso implementar essas features (novos modelos +
-migrations Alembic + services + testes). Feito isso, os jobs viram entrypoints
-finos que chamam os services.
+- ambientes com processo permanentemente ativo podem usar
+  `SCHEDULER_ENABLED=true`;
+- ambientes que escalam a zero não devem depender do scheduler interno;
+- os schedules do Terraform AWS não devem ser ativados, pois as tasks encerram
+  com erro ao tentar importar os módulos ausentes.
 
 ## Migração portfólio → scale-up
 

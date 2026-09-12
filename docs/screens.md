@@ -7,11 +7,21 @@ The main screens of the application, and what each is responsible for. This is a
 ### Login
 
 - Email + password only.
-- Out of scope for now: account creation (sign-up), password recovery. See [Users and teams](./users-and-teams.md) and [Authentication and access](./authentication.md).
+- Links to public account registration. Password recovery remains out of scope. See [Users and teams](./users-and-teams.md) and [Authentication and access](./authentication.md).
+
+### Registration
+
+- Collects email, password, and team name.
+- Creates the manager account, team, initial squad, and division placement, then signs the user in.
 
 ### Home
 
-- Landing screen after login. Not yet designed (see [Open questions](#open-questions)).
+- Landing screen after login, showing the next fixture, current league position/division/season, and recent results.
+
+### Team
+
+- Shows the team name, division, season, record, goals, points, and squad size.
+- Lets the manager rename the team.
 
 ### Tactics
 
@@ -25,12 +35,13 @@ The main screens of the application, and what each is responsible for. This is a
 
 ### Squad
 
-- Lists every player in the user's squad, with a **detail view per player**.
-- Where the user manages the squad, e.g. removing players. See [Players and squad](./players.md).
+- Lists every player in the user's squad with attributes shown inline.
+- Lets the manager remove players while respecting minimum squad composition. There is currently no separate player-detail route.
 
 ### Matches
 
-- Shows the list of matches for the user's team (fixtures and/or results).
+- Shows fixtures and results for the user's team, with match details and the minute-by-minute event log.
+- The current UI can request simulation of an eligible match directly.
 - See [Competition — Season structure](./competition.md#season-structure) and [Match simulation](./match-simulation.md) for how a result is produced.
 
 ### Youth academy
@@ -40,11 +51,10 @@ The main screens of the application, and what each is responsible for. This is a
 
 ## Status
 
-Not yet implemented: all screens above (no frontend routes for tactics, league table, squad detail, matches, or youth academy exist yet beyond the current login and read-only "my team" pages).
+Implemented: login, registration, home, team, squad, tactics, matches, league table, youth academy, shared authenticated navigation, logout, and locale selection. All user-facing copy is available in Portuguese, English, and Spanish.
 
 ## Open questions
 
-- Home screen: what does it actually show (e.g. next match, latest results, notifications)? Not yet designed.
-- Squad screen vs. Tactics screen boundary: squad screen manages the roster (view/remove/detail); Tactics screen manages starters/bench/formation from within that roster. Confirm this split is correct.
-- Matches screen: does it show only the user's team's matches, or the full division calendar/results for all 10 teams?
-- Player detail view: which attributes/info are shown per player beyond the fields already in the model (name, position, shirt number, age, nationality, overall)?
+- Should direct, user-triggered match simulation remain available outside development, or should production rely exclusively on the scheduled matchday?
+- Should the matches screen remain scoped to the user's team or eventually expose the full division calendar?
+- Is a dedicated player-detail view needed beyond the attributes currently shown inline on the squad and tactics screens?

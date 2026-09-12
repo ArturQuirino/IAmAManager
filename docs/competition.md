@@ -19,7 +19,7 @@ At the end of a season, within each division:
 
 ### Season structure
 
-- A season is played at a rate of **one match per day, in real time**: every real calendar day at **18:00**, that day's round of matches kicks off across the whole division (5 concurrent matches per 10-team division). This is expected to run via a **daily scheduled job**.
+- A season is played at a rate of **one match per day, in real time**: every real calendar day at **18:00** by default, that day's round is simulated across every division. The time and scheduler activation are configurable through `MATCHDAY_HOUR`, `MATCHDAY_MINUTE`, and `SCHEDULER_ENABLED`.
 - Each team plays every other team in its division **twice** — one home leg and one away leg (double round-robin).
 - With 10 teams per division, that is 9 opponents × 2 legs = **18 matches per season** per team, i.e. **18 real calendar days** per season.
 
@@ -51,8 +51,17 @@ At the end of a season, within each division:
 
 ## Status
 
-Not yet implemented: this entire scope (no `Division`, `Season`, `Match`, `Standing`, or fake-team models/logic exist in the codebase yet). This document describes the intended design.
+Implemented:
+
+- Division, team, match, and game-clock persistence, with Alembic migrations.
+- Dynamic division creation and replacement of the lowest-ranked fake team when a user registers.
+- Deterministic double round-robin scheduling using the circle method: 18 rounds and 90 matches for a 10-team division.
+- Standings, match-result updates, and deterministic ordering by points, goal difference, goals scored, team name, and id.
+- Pyramid-wide season completion, promotion/relegation, standings reset, season-number increment, and generation of the next fixture list.
+- Idempotent daily matchday processing across all divisions. In development, authenticated users can trigger it through `POST /dev/run-matchday`; this endpoint is not mounted in production.
+
+Operational caveat: the in-process scheduler is implemented, but the separate cloud job entrypoints referenced by the deployment configuration are not yet available. See `deploy/README.md`.
 
 ## Open questions
 
-- Exact round-robin ordering algorithm: which opponent a team faces on which of the 18 days is not yet specified (just that it's a double round-robin over 18 real days).
+- None currently.

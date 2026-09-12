@@ -53,15 +53,16 @@
 
 ## Status
 
-Implemented: `Player` model with `name`, `position`, `shirtNumber`, `age`, `nationality`, `overall`, owned by a user (`userId`); read-only "my team" endpoint. Note: `shirtNumber` is no longer a business requirement (can be dropped), and `age`/`nationality` are deferred to a future iteration — the current fields are ahead of, and partly diverge from, the rules below.
+Implemented:
 
-Not yet implemented:
-- The simplified 4-position model described above. **Note:** the current `PlayerPosition` enum in code (`backend/app/models/player.py`) has 10 granular positions (`GK`, `CB`, `LB`, `RB`, `CDM`, `CM`, `CAM`, `LW`, `RW`, `ST`) — this needs to be reconciled with the 4-position rule (either the enum is simplified, or the 4 positions are a display/grouping concept layered on top of the granular enum).
-- The six-attribute model and derived `overall` (currently `overall` is a stored, independent field).
-- Squad management endpoints (add/remove player, select starting XI).
-- Random player/squad generation logic.
-- Youth academy (weekly refresh, generation, add-to-squad flow).
+- Four-position `Player` model (`GK`, `DEF`, `MID`, `ATT`) with the six attributes above and a derived, non-persisted `overall`.
+- Random player generation and an 18-player initial squad: a 4-3-3 starting XI plus 7 randomly positioned reserves.
+- Authenticated squad listing and player removal, enforcing the minimum composition.
+- Starting-XI selection with exactly 11 distinct players owned by the team and exactly one goalkeeper. Formation is derived dynamically as `DEF-MID-ATT`.
+- Youth academy with four candidates, lazy initial generation, weekly replacement, ownership checks, and promotion into the squad up to the 40-player cap.
+
+The weekly refresh is performed by the matchday cycle every seven successful game days. There is also a development-only manual matchday trigger.
 
 ## Open questions
 
-- How does the current 10-position enum reconcile with the 4-position rule (goalkeeper/defender/midfielder/attacker)?
+- None currently.
